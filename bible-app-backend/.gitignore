@@ -1,0 +1,25 @@
+# Node modules
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment Variables
+.env
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Build artifacts and static files
+dist/
+public/build/
+coverage/
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
