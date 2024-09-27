@@ -1,5 +1,5 @@
 class ApiConstants {
-  static const String authbaseUrl = 'http://10.0.2.2:5000';
+  static const String authbaseUrl = 'https://my-bible-backend.onrender.com';
   static const String loginEndpoint = '$authbaseUrl/api/auth/login';
   static const String registerEndpoint = '$authbaseUrl/api/auth/register';
   static const String highlightsEndpoint = '$authbaseUrl/api/highlights';
