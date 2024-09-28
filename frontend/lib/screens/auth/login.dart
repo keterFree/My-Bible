@@ -112,7 +112,13 @@ class _LoginScreenState extends State<LoginScreen> {
               TextFormField(
                 style: Theme.of(context).textTheme.bodyMedium,
                 controller: _phoneController,
-                decoration: const InputDecoration(labelText: 'Phone'),
+                decoration: InputDecoration(
+                  labelText: 'Phone',
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                        color: Theme.of(context).textTheme.bodyMedium!.color!),
+                  ),
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your phone number';
@@ -120,11 +126,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   return null;
                 },
               ),
+              const SizedBox(height: 10),
               TextFormField(
                 style: Theme.of(context).textTheme.bodyMedium,
                 controller: _passwordController,
                 obscureText: true,
-                decoration: const InputDecoration(labelText: 'Password'),
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                        color: Theme.of(context).textTheme.bodyMedium!.color!),
+                  ),
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your password';
@@ -151,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
                 child: const Text("Don't have an account? Register here"),
               ),
-              const SizedBox(height: 20),
+              // const SizedBox(height: 5),
               TextButton(
                 onPressed: () {
                   Navigator.push(

@@ -112,25 +112,50 @@ class _SplashScreenState extends State<SplashScreen>
           children: [
             // Pulsating effect for text using Scale and Opacity animations
             AnimatedBuilder(
-              animation: _controller,
+              animation: _controller, // Connect the animation controller
               builder: (context, child) {
-                // Scale and opacity change over time
                 return Transform.scale(
-                  scale: 1 + 0.1 * _controller.value, // Scale pulsation
+                  scale: 1 + 0.1 * _controller.value, // Create pulsation effect
                   child: Opacity(
-                    opacity: 0.7 + 0.3 * _controller.value, // Opacity pulsation
-                    child: Text(
-                      'Bible App',
-                      style:
-                          Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
+                    opacity: 0.7 +
+                        0.3 * _controller.value, // Change opacity over time
+                    child: Column(
+                      mainAxisAlignment:
+                          MainAxisAlignment.center, // Center the content
+                      children: [
+                        Image.asset(
+                          'assets/images/icon.png', // Ensure this image path is correct
+                          width: 100, // Width of the image
+                          height: 100, // Height of the image
+                        ),
+                        const SizedBox(
+                            height: 16), // Space between image and text
+                        Text(
+                          'Bible App',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineLarge
+                              ?.copyWith(
+                            fontSize: 36, // Set custom font size
+                            fontWeight: FontWeight.bold, // Bold text
+                            color: Theme.of(context)
+                                .primaryColor, // Use primary color
+                            shadows: const [
+                              Shadow(
+                                blurRadius: 4.0,
+                                color: Colors.black38, // Shadow color
+                                offset: Offset(2, 2), // Shadow offset
                               ),
+                            ], // Add shadow effect
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 );
               },
             ),
+
             const SizedBox(height: 20),
             // Show loading indicator or error icon
             _isLoading
@@ -143,7 +168,8 @@ class _SplashScreenState extends State<SplashScreen>
                           // Retry button if error occurs
                           ElevatedButton(
                             onPressed: _retryInitialization,
-                            child: Text('Retry',style: Theme.of(context).textTheme.bodySmall),
+                            child: Text('Retry',
+                                style: Theme.of(context).textTheme.bodySmall),
                           ),
                         ],
                       )
@@ -157,9 +183,23 @@ class _SplashScreenState extends State<SplashScreen>
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       fontSize: 16,
-                      color: _hasError ? Colors.red : Colors.white,
+                      color: _hasError
+                          ? Colors.red
+                          : Theme.of(context).textTheme.bodyLarge!.color,
                     ),
               ),
+            ),
+            Text(
+              "created by keter titus",
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontSize: 10,
+                    fontFamily: 'RaleWay',
+                    fontStyle: FontStyle.italic,
+                    color: _hasError
+                        ? Colors.red
+                        : Theme.of(context).textTheme.bodyLarge!.color,
+                  ),
             ),
           ],
         ),

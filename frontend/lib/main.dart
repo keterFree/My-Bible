@@ -71,6 +71,10 @@ class MyApp extends StatelessWidget {
         surface: const Color(0xFFFBFADA), // #FBFADA
       ),
       textTheme: const TextTheme(
+        bodySmall: TextStyle(
+            color: Color.fromARGB(255, 61, 68, 59),
+            fontSize: 15,
+            fontWeight: FontWeight.bold),
         headlineLarge: TextStyle(color: Color(0xFF12372A)), // #12372A
         bodyLarge: TextStyle(color: Color(0xFF436850), fontSize: 18), // #436850
         bodyMedium: TextStyle(color: Color(0xFF12372A), fontSize: 18),
