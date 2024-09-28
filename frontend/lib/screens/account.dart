@@ -68,7 +68,7 @@ class _AccountScreenState extends State<AccountScreen> {
           userName = user['name'] ?? userName;
           userContacts = user['phone'] ?? userContacts;
           _nameController.text = userName;
-          _phoneController.text = userContacts.replaceFirst('+254', '');
+          // _phoneController.text = userContacts.replaceFirst('+254', '');
         });
         _logger.i('Fetched user details from: $url');
       } else {
@@ -97,7 +97,16 @@ class _AccountScreenState extends State<AccountScreen> {
       var url = Uri.parse(ApiConstants.accDetailsEndpoint);
       _logger.i("API URL: $url");
 
-      String formattedPhoneNumber = userContacts;
+      String formattedPhoneNumber = _phoneController.text.trim();
+
+      if (formattedPhoneNumber.length == 10 &&
+          formattedPhoneNumber.startsWith('0')) {
+        formattedPhoneNumber =
+            '+254${formattedPhoneNumber.replaceFirst('0', '')}';
+      } else if (formattedPhoneNumber.length == 9) {
+        formattedPhoneNumber = '+254$formattedPhoneNumber';
+      }
+      _logger.i(formattedPhoneNumber);
       Map<String, dynamic> requestBody = {
         'name': isEditingName ? _nameController.text : userName,
         'phone': isEditingPhone ? formattedPhoneNumber : userContacts,
@@ -123,18 +132,11 @@ class _AccountScreenState extends State<AccountScreen> {
 
         // Save or update the token in SharedPreferences for persistent login
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        String? existingToken = prefs.getString('auth_token');
-        if (existingToken != null) {
-          print("Token already exists, updating...");
-        } else {
-          print("Saving new token...");
-        }
-
         await prefs.setString('auth_token', token);
 
         setState(() {
-          userName = _nameController.text;
-          userContacts = formattedPhoneNumber;
+          // Fetch updated details again to refresh the UI
+          _fetchUserDetails();
           isEditingName = false;
           isEditingPhone = false;
           isChangingPassword = false;

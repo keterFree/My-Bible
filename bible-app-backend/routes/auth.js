@@ -11,7 +11,7 @@ const {
 const authMiddleware = require('../middleware/authMiddleware'); // Authentication middleware (assumed you have this)
 
 // Register user
-router.post('/register', register);
+router.post('/register',authAndCheckDuplicatePhone, register);
 
 // Login user
 router.post('/login', login);
@@ -20,7 +20,7 @@ router.post('/login', login);
 router.get('/profile', authMiddleware, getUserDetails);
 
 // Update user details (protected route)
-router.put('/profile', authMiddleware, updateUserDetails);
+router.put('/profile',authAndCheckDuplicatePhone, authMiddleware, updateUserDetails);
 
 // Send password reset code
 router.post('/password-reset/send', sendResetCode);
