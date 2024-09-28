@@ -8,19 +8,21 @@ const {
     sendResetCode,
     verifyResetCodeAndResetPassword
 } = require('../controllers/authController');
-const authMiddleware = require('../middleware/authMiddleware'); // Authentication middleware (assumed you have this)
+
+const verifyToken = require('../middleware/verifyToken');
+const checkDuplicatePhone = require('../middleware/checkDuplicatePhone');
 
 // Register user
-router.post('/register',authAndCheckDuplicatePhone, register);
+router.post('/register',checkDuplicatePhone, register);
 
 // Login user
 router.post('/login', login);
 
 // Get user details (protected route)
-router.get('/profile', authMiddleware, getUserDetails);
+router.get('/profile', verifyToken, getUserDetails);
 
 // Update user details (protected route)
-router.put('/profile',authAndCheckDuplicatePhone, authMiddleware, updateUserDetails);
+router.put('/profile',verifyToken,checkDuplicatePhone, updateUserDetails);
 
 // Send password reset code
 router.post('/password-reset/send', sendResetCode);
