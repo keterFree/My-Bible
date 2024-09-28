@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import 'dart:convert';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -17,7 +18,7 @@ class AccountScreen extends StatefulWidget {
 }
 
 class _AccountScreenState extends State<AccountScreen> {
-  late Logger _logger;
+  Logger _logger = Logger();
   String userName = '';
   String userContacts = '';
   String userId = '';
@@ -55,7 +56,6 @@ class _AccountScreenState extends State<AccountScreen> {
       });
 
       var url = Uri.parse(ApiConstants.accDetailsEndpoint);
-      _logger.i('Fetching user details from: $url');
 
       final response = await http.get(
         url,
@@ -70,6 +70,7 @@ class _AccountScreenState extends State<AccountScreen> {
           _nameController.text = userName;
           _phoneController.text = userContacts.replaceFirst('+254', '');
         });
+        _logger.i('Fetched user details from: $url');
       } else {
         _logger.e('Failed to load user details: ${response.statusCode}');
       }
@@ -117,6 +118,12 @@ class _AccountScreenState extends State<AccountScreen> {
       );
 
       if (response.statusCode == 200) {
+        var responseData = jsonDecode(response.body);
+        var token = responseData['token'];
+
+        // Save the token in SharedPreferences for persistent login
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('auth_token', token);
         setState(() {
           userName = _nameController.text;
           userContacts = formattedPhoneNumber;
@@ -126,7 +133,7 @@ class _AccountScreenState extends State<AccountScreen> {
           _clearFormFields();
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User details updated successfully!')),
+          SnackBar(content: Text(responseData['msg'])),
         );
       } else {
         var decodedResponse = json.decode(response.body);
@@ -174,14 +181,14 @@ class _AccountScreenState extends State<AccountScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Name: $userName',
+                        userContacts,
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                      Text(
+                        userName,
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        'Phone: $userContacts',
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
                     ],
                   ),
                 ],

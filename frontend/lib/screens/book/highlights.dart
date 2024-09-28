@@ -115,7 +115,7 @@ class _HighlightsScreenState extends State<HighlightsScreen> {
     return BaseScaffold(
       title: "Highlights",
       body: _isLoading
-          ? Center(
+          ? const Center(
               child: CircularProgressIndicator(), // Show loading indicator
             )
           : _highlights.isEmpty
@@ -136,8 +136,8 @@ class _HighlightsScreenState extends State<HighlightsScreen> {
                     final color = _getColorFromName(highlight['color']);
 
                     return Container(
-                      margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                      padding: EdgeInsets.all(15),
+                      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                      padding: const EdgeInsets.all(15),
                       decoration: BoxDecoration(
                         color: color,
                         borderRadius: BorderRadius.circular(10),

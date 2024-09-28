@@ -106,7 +106,7 @@ exports.updateUserDetails = async (req, res) => {
         if (phone) user.phone = phone;
 
         await user.save();
-
+        console.log(`${user.name}, ${user.phone}`);
         // Create new JWT token with updated user details
         const payload = { user: { id: user.id, name: user.name, phone: user.phone } };
         jwt.sign(
