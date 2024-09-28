@@ -233,7 +233,16 @@ class _AccountScreenState extends State<AccountScreen> {
                       TextFormField(
                         style: Theme.of(context).textTheme.bodyMedium,
                         controller: _nameController,
-                        decoration: const InputDecoration(labelText: 'Name'),
+                        decoration: InputDecoration(
+                          labelText: 'your name here',
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium!
+                                    .color!),
+                          ),
+                        ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Name cannot be empty';
@@ -279,8 +288,15 @@ class _AccountScreenState extends State<AccountScreen> {
                       TextFormField(
                         style: Theme.of(context).textTheme.bodyMedium,
                         controller: _phoneController,
-                        decoration: const InputDecoration(
-                          labelText: 'Phone (without +254)',
+                        decoration: InputDecoration(
+                          labelText: '07xx xxx xxx',
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium!
+                                    .color!),
+                          ),
                         ),
                         keyboardType: TextInputType.phone,
                         inputFormatters: [
@@ -338,8 +354,16 @@ class _AccountScreenState extends State<AccountScreen> {
                       TextFormField(
                         style: Theme.of(context).textTheme.bodyMedium,
                         controller: _oldPasswordController,
-                        decoration:
-                            const InputDecoration(labelText: 'Old Password'),
+                        decoration: InputDecoration(
+                          labelText: 'Old Password',
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium!
+                                    .color!),
+                          ),
+                        ),
                         obscureText: true,
                         validator: (value) {
                           if (_newPasswordController.text.isNotEmpty &&
@@ -353,8 +377,16 @@ class _AccountScreenState extends State<AccountScreen> {
                       TextFormField(
                         style: Theme.of(context).textTheme.bodyMedium,
                         controller: _newPasswordController,
-                        decoration:
-                            const InputDecoration(labelText: 'New Password'),
+                        decoration: InputDecoration(
+                          labelText: 'New Password',
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium!
+                                    .color!),
+                          ),
+                        ),
                         obscureText: true,
                         validator: (value) {
                           if (value != null && value.length < 6) {
@@ -367,8 +399,16 @@ class _AccountScreenState extends State<AccountScreen> {
                       TextFormField(
                         style: Theme.of(context).textTheme.bodyMedium,
                         controller: _confirmPasswordController,
-                        decoration: const InputDecoration(
-                            labelText: 'Confirm New Password'),
+                        decoration: InputDecoration(
+                          labelText: 'Confirm New Password',
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium!
+                                    .color!),
+                          ),
+                        ),
                         obscureText: true,
                         validator: (value) {
                           if (value != _newPasswordController.text) {
