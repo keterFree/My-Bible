@@ -121,9 +121,17 @@ class _AccountScreenState extends State<AccountScreen> {
         var responseData = jsonDecode(response.body);
         var token = responseData['token'];
 
-        // Save the token in SharedPreferences for persistent login
+        // Save or update the token in SharedPreferences for persistent login
         SharedPreferences prefs = await SharedPreferences.getInstance();
+        String? existingToken = prefs.getString('auth_token');
+        if (existingToken != null) {
+          print("Token already exists, updating...");
+        } else {
+          print("Saving new token...");
+        }
+
         await prefs.setString('auth_token', token);
+
         setState(() {
           userName = _nameController.text;
           userContacts = formattedPhoneNumber;
@@ -132,6 +140,7 @@ class _AccountScreenState extends State<AccountScreen> {
           isChangingPassword = false;
           _clearFormFields();
         });
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(responseData['msg'])),
         );

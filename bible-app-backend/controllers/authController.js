@@ -81,6 +81,7 @@ exports.getUserDetails = async (req, res) => {
 // Update user details
 exports.updateUserDetails = async (req, res) => {
     const { name, phone, password, oldPassword } = req.body;
+    console.log(`${name}, ${phone}`);
     try {
         const userId = req.user.id;
         let user = await User.findById(userId);
