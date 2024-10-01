@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/auth/login.dart';
 import 'package:http/http.dart' as http;
@@ -41,43 +43,80 @@ class _SignUpScreenState extends State<SignUpScreen> {
         _isLoading = true;
       });
 
-      // Get the phone number from the controller
-      String phoneNumber = _phoneController.text.trim();
+      try {
+        // Get the phone number from the controller
+        String phoneNumber = _phoneController.text.trim();
 
-      // If the phone number starts with 0, remove the leading zero
-      if (phoneNumber.startsWith('0') && phoneNumber.length == 10) {
-        phoneNumber = phoneNumber
-            .substring(1); // Remove the first character (the leading 0)
-      }
+        // If the phone number starts with 0, remove the leading zero
+        if (phoneNumber.startsWith('0') && phoneNumber.length == 10) {
+          phoneNumber = phoneNumber
+              .substring(1); // Remove the first character (the leading 0)
+        }
 
-      // Prepend +254 to the cleaned phone number
-      String fullPhoneNumber = '+254$phoneNumber';
+        // Prepend +254 to the cleaned phone number
+        String fullPhoneNumber = '+254$phoneNumber';
 
-      var url = Uri.parse(ApiConstants.registerEndpoint);
-      var response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          "name": _nameController.text,
-          "phone": fullPhoneNumber, // Send the cleaned phone number with +254
-          "password": _passwordController.text,
-        }),
-      );
+        var url = Uri.parse(ApiConstants.registerEndpoint);
 
-      if (response.statusCode == 200) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        var response = await http.post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            "name": _nameController.text,
+            "phone": fullPhoneNumber, // Send the cleaned phone number with +254
+            "password": _passwordController.text,
+          }),
         );
-      } else {
+
+        if (response.statusCode == 200) {
+          // Registration successful, navigate to the login screen
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
+          );
+        } else {
+          // Show error message from the server
+          String errorMsg = json.decode(response.body)["msg"] ??
+              "Registration failed. Please try again.";
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMsg)),
+          );
+        }
+      } on http.ClientException catch (e) {
+        // Handle HTTP client errors like connection issues
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration failed!')),
+          SnackBar(
+              content: Text('Connection error. Please try again later.$e')),
         );
+        debugPrint('ClientException: $e');
+      } on FormatException catch (e) {
+        // Handle JSON decoding issues
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content:
+                  Text('Response format error. Please contact support.$e')),
+        );
+        debugPrint('FormatException: $e');
+      } on TimeoutException catch (e) {
+        // Handle request timeout errors
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Request timed out. Please try again later.$e')),
+        );
+        debugPrint('TimeoutException: $e');
+      } catch (e) {
+        // Handle any other errors that might occur
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'An unexpected error occurred. Please try again later.$e')),
+        );
+        debugPrint('Unexpected error: $e');
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
       }
-
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 

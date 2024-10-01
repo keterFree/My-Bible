@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:frontend/providers/token_provider.dart';
 import 'package:frontend/screens/account.dart';
@@ -8,9 +10,16 @@ import 'package:frontend/screens/book/highlights.dart';
 import 'package:frontend/screens/error_screen.dart';
 import 'package:frontend/screens/home.dart';
 import 'package:provider/provider.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Initialize the appropriate database factory based on the platform
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    // Use sqflite_ffi for desktop platforms
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
 
   runApp(
     MultiProvider(

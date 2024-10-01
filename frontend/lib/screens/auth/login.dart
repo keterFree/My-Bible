@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
@@ -47,52 +49,91 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         _isLoading = true;
       });
-      var phoneNo = _phoneController.text;
 
-      // Check if it's a phone number (adjust regex to your phone number format)
-      if (RegExp(r'^0[0-9]{9}$').hasMatch(phoneNo)) {
-        // If phone number starts with 0 and is 10 digits, remove the leading zero
-        if (phoneNo.startsWith('0') && phoneNo.length == 10) {
-          phoneNo = phoneNo.substring(1); // Remove the leading 0
+      try {
+        var phoneNo = _phoneController.text;
+
+        // Validate and format the phone number
+        if (RegExp(r'^0[0-9]{9}$').hasMatch(phoneNo)) {
+          // If phone number starts with 0 and is 10 digits, remove the leading zero
+          if (phoneNo.startsWith('0') && phoneNo.length == 10) {
+            phoneNo = phoneNo.substring(1); // Remove the leading 0
+          }
+          // Prepend +254 for Kenya
+          phoneNo = '+254$phoneNo';
         }
-        // Prepend +254 for Kenya
-        phoneNo = '+254$phoneNo';
-      }
-      var url = Uri.parse(ApiConstants.loginEndpoint);
-      var response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          "phone": phoneNo,
-          "password": _passwordController.text,
-        }),
-      );
 
-      if (response.statusCode == 200) {
-        var responseData = jsonDecode(response.body);
-        var token = responseData['token'];
+        var url = Uri.parse(ApiConstants.loginEndpoint);
+        var response = await http
+            .post(
+              url,
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode({
+                "phone": phoneNo,
+                "password": _passwordController.text,
+              }),
+            )
+            .timeout(const Duration(seconds: 10)); // Set a 10-second timeout
 
-        // Save the token in SharedPreferences for persistent login
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('auth_token', token);
+        if (response.statusCode == 200) {
+          var responseData = jsonDecode(response.body);
+          var token = responseData['token'];
 
-        // Save the token in TokenProvider
-        Provider.of<TokenProvider>(context, listen: false).setToken(token);
+          // Save the token in SharedPreferences for persistent login
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('auth_token', token);
 
-        // Navigate to Home Screen
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
-      } else {
+          // Save the token in TokenProvider
+          Provider.of<TokenProvider>(context, listen: false).setToken(token);
+
+          // Navigate to Home Screen
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+          );
+        } else {
+          // Handle non-200 status codes and show the error message from the server
+          String errorMsg = json.decode(response.body)["msg"] ??
+              "Login failed. Please try again.";
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMsg)),
+          );
+        }
+      } on http.ClientException catch (e) {
+        // Handle HTTP client errors
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid credentials!')),
+          SnackBar(
+              content: Text('Connection error. Please try again later.$e')),
         );
+        debugPrint('ClientException: $e');
+      } on FormatException catch (e) {
+        // Handle JSON decoding issues
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content:
+                  Text('Response format error. Please contact support.$e')),
+        );
+        debugPrint('FormatException: $e');
+      } on TimeoutException catch (e) {
+        // Handle request timeout errors
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Request timed out. Please try again later.$e')),
+        );
+        debugPrint('TimeoutException: $e');
+      } catch (e) {
+        // Handle any other unforeseen errors
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'An unexpected error occurred. Please try again later.$e')),
+        );
+        debugPrint('Unexpected error: $e');
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
       }
-
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 

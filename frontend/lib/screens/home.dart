@@ -95,7 +95,6 @@ class _HomeScreenState extends State<HomeScreen> {
     if (token != null) {
       // Decode the token and extract the user's name
       try {
-        // print(token);
         final jwt = JWT.decode(token);
         userName = jwt.payload['user']['name'] ?? 'User';
         userContacts = jwt.payload['user']['phone'] ?? '';
@@ -185,7 +184,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           GestureDetector(
                             onTap: () {
                               if (commentaryUrl != null) {
-                                print(commentaryUrl);
                                 _launchUrl(commentaryUrl!);
                               }
                             },
