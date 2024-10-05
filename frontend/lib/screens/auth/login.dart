@@ -1,12 +1,10 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:dio/dio.dart'; // Import the Dio package
 import 'package:frontend/screens/home.dart';
 import 'package:frontend/screens/auth/signup.dart';
-import 'package:frontend/constants.dart';
+import 'package:frontend/constants.dart'; // Ensure you have the correct path for ApiConstants
 import 'package:frontend/providers/token_provider.dart';
 import 'package:frontend/screens/auth/forgot_password.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,6 +21,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+
+  // Initialize Dio instance
+  final Dio _dio = Dio();
 
   @override
   void initState() {
@@ -63,20 +64,21 @@ class _LoginScreenState extends State<LoginScreen> {
           phoneNo = '+254$phoneNo';
         }
 
-        var url = Uri.parse(ApiConstants.loginEndpoint);
-        var response = await http
-            .post(
-              url,
-              headers: {'Content-Type': 'application/json'},
-              body: jsonEncode({
-                "phone": phoneNo,
-                "password": _passwordController.text,
-              }),
-            )
-            .timeout(const Duration(seconds: 10)); // Set a 10-second timeout
+        // Make the Dio POST request
+        Response response = await _dio.post(
+          ApiConstants.loginEndpoint,
+          data: {
+            "phone": phoneNo,
+            "password": _passwordController.text,
+          },
+          options: Options(
+            headers: {'Content-Type': 'application/json'},
+            sendTimeout: const Duration(seconds: 10), // Request timeout
+          ),
+        );
 
         if (response.statusCode == 200) {
-          var responseData = jsonDecode(response.body);
+          var responseData = response.data;
           var token = responseData['token'];
 
           // Save the token in SharedPreferences for persistent login
@@ -93,40 +95,37 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         } else {
           // Handle non-200 status codes and show the error message from the server
-          String errorMsg = json.decode(response.body)["msg"] ??
-              "Login failed. Please try again.";
+          String errorMsg =
+              response.data["msg"] ?? "Login failed. Please try again.";
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(errorMsg)),
           );
         }
-      } on http.ClientException catch (e) {
-        // Handle HTTP client errors
+      } on DioException catch (e) {
+        // Handle Dio errors like request timeout, server error, etc.
+        String errorMessage = '';
+        if (e.type == DioExceptionType.connectionTimeout) {
+          errorMessage = 'Connection timed out. Please try again later.';
+        } else if (e.type == DioExceptionType.receiveTimeout) {
+          errorMessage = 'Response timed out. Please try again later.';
+        } else if (e.response != null) {
+          // Non-200 status code errors
+          errorMessage =
+              e.response?.data["msg"] ?? 'Login failed. Please try again.';
+        } else {
+          errorMessage =
+              'An unexpected error occurred. Please try again later.';
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Connection error. Please try again later.$e')),
+          SnackBar(content: Text(errorMessage)),
         );
-        debugPrint('ClientException: $e');
-      } on FormatException catch (e) {
-        // Handle JSON decoding issues
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content:
-                  Text('Response format error. Please contact support.$e')),
-        );
-        debugPrint('FormatException: $e');
-      } on TimeoutException catch (e) {
-        // Handle request timeout errors
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Request timed out. Please try again later.$e')),
-        );
-        debugPrint('TimeoutException: $e');
+        debugPrint('DioError: $e');
       } catch (e) {
         // Handle any other unforeseen errors
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(
-                  'An unexpected error occurred. Please try again later.$e')),
+                  'An unexpected error occurred. Please try again later. $e')),
         );
         debugPrint('Unexpected error: $e');
       } finally {
@@ -205,7 +204,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
                 child: const Text("Don't have an account? Register here"),
               ),
-              // const SizedBox(height: 5),
               TextButton(
                 onPressed: () {
                   Navigator.push(
