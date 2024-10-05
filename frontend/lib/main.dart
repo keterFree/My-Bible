@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:frontend/providers/token_provider.dart';
 import 'package:frontend/screens/account.dart';
@@ -37,8 +36,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Bible App',
-      themeMode:
-          ThemeMode.system, // Automatically switch between light/dark mode
+      themeMode: ThemeMode.system, // Automatically switch between light/dark mode
       theme: _lightTheme(), // Light theme
       darkTheme: _darkTheme(), // Dark theme
       initialRoute: '/',
@@ -72,33 +70,30 @@ class MyApp extends StatelessWidget {
   // Light Theme Configuration
   ThemeData _lightTheme() {
     return ThemeData(
-      primaryColor: const Color(0xFF12372A), // #12372A
-      scaffoldBackgroundColor: const Color(0xFFFBFADA), // #FBFADA
+      primaryColor: const Color(0xFFD90B0B), // #D90B0B
+      scaffoldBackgroundColor: const Color(0xFFF2F2F2), // #F2F2F2
       colorScheme: ColorScheme.fromSwatch().copyWith(
-        primary: const Color(0xFF12372A), // #12372A
-        secondary: const Color(0xFF436850), // #436850
-        surface: const Color(0xFFFBFADA), // #FBFADA
+        primary: const Color(0xFFD91424), // #D91424
+        secondary: const Color(0xFFBF364F), // #BF364F
+        surface: const Color(0xFFF2F2F2), // #F2F2F2
       ),
       textTheme: const TextTheme(
         bodySmall: TextStyle(
-            color: Color.fromARGB(255, 61, 68, 59),
-            fontSize: 15,
-            fontWeight: FontWeight.bold),
-        headlineLarge: TextStyle(color: Color(0xFF12372A)), // #12372A
-        bodyLarge: TextStyle(color: Color(0xFF436850), fontSize: 18), // #436850
-        bodyMedium: TextStyle(color: Color(0xFF12372A), fontSize: 18),
+            color: Color(0xFF0D0D0D), fontSize: 15, fontWeight: FontWeight.bold),
+        headlineLarge: TextStyle(color: Color.fromARGB(255, 51, 2, 2)), // #D90B0B
+        bodyLarge: TextStyle(color: Color(0xFF0D0D0D), fontSize: 18), // #0D0D0D
+        bodyMedium: TextStyle(color: Color(0xFF0D0D0D), fontSize: 18),
       ),
       buttonTheme: const ButtonThemeData(
-        buttonColor: Color(0xFFADBC9F), // #ADBC9F
+        buttonColor: Color(0xFFBF364F), // #BF364F
         textTheme: ButtonTextTheme.primary,
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF12372A), // #12372A
-        titleTextStyle:
-            TextStyle(color: Color(0xFFFBFADA), fontSize: 20), // #FBFADA
+        backgroundColor: Color(0xFFBF364F), // #BF364F
+        titleTextStyle: TextStyle(color: Colors.white, fontSize: 20), // White text
       ),
       iconTheme: const IconThemeData(
-        color: Color(0xFF436850), // #436850
+        color: Color.fromARGB(255, 240, 159, 165), // #D91424
       ),
     );
   }
@@ -106,34 +101,30 @@ class MyApp extends StatelessWidget {
   // Dark Theme Configuration
   ThemeData _darkTheme() {
     return ThemeData(
-      primaryColor: const Color(0xFFFBFADA), // #FBFADA
-      scaffoldBackgroundColor: const Color(0xFF12372A), // #12372A
+      primaryColor: const Color(0xFFF2F2F2), // #F2F2F2
+      scaffoldBackgroundColor: const Color(0xFF8C808C), // #8C808C
       colorScheme: ColorScheme.fromSwatch().copyWith(
-        primary: const Color(0xFFFBFADA), // #FBFADA
-        secondary: const Color(0xFFADBC9F), // #ADBC9F
-        surface: const Color(0xFF12372A), // #12372A
+        primary: const Color(0xFFF2F2F2), // #F2F2F2
+        secondary: const Color(0xFFA60311), // #A60311
+        surface: const Color(0xFF8C808C), // #8C808C
       ),
       textTheme: const TextTheme(
         bodySmall: TextStyle(
-            color: Color.fromARGB(255, 68, 68, 59),
-            fontSize: 15,
-            fontWeight: FontWeight.bold),
-        headlineLarge: TextStyle(color: Color(0xFFFBFADA)), // #FBFADA
-        bodyLarge: TextStyle(color: Color(0xFFADBC9F), fontSize: 18), // #ADBC9F
-        bodyMedium:
-            TextStyle(color: Color.fromARGB(255, 228, 248, 207), fontSize: 18),
+            color: Color(0xFFF2F2F2), fontSize: 15, fontWeight: FontWeight.bold),
+        headlineLarge: TextStyle(color: Color(0xFFF2F2F2)), // #F2F2F2
+        bodyLarge: TextStyle(color: Color(0xFFF2F2F2), fontSize: 18), // #F2F2F2
+        bodyMedium: TextStyle(color: Color(0xFFF2F2F2), fontSize: 18),
       ),
       buttonTheme: const ButtonThemeData(
-        buttonColor: Color(0xFF436850), // #436850
+        buttonColor: Color(0xFF010D00), // #010D00
         textTheme: ButtonTextTheme.primary,
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF12372A), // #12372A
-        titleTextStyle:
-            TextStyle(color: Color(0xFFFBFADA), fontSize: 20), // #FBFADA
+        backgroundColor: Color(0xFF010D00), // #010D00
+        titleTextStyle: TextStyle(color: Colors.white, fontSize: 20), // White text
       ),
       iconTheme: const IconThemeData(
-        color: Color(0xFFADBC9F), // #ADBC9F
+        color: Color.fromARGB(255, 255, 146, 146), // #A60311
       ),
     );
   }
