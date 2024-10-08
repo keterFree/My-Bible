@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/providers/token_provider.dart';
-import 'package:frontend/screens/auth/login.dart';
+import 'package:frontend/auth/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BaseScaffold extends StatelessWidget {
@@ -18,7 +18,7 @@ class BaseScaffold extends StatelessWidget {
         title: Text(title),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Colors.white),
             onPressed: () async {
               final confirmation = await showConfirmationDialog(context);
               if (confirmation) {
@@ -43,7 +43,7 @@ class BaseScaffold extends StatelessWidget {
           children: [
             IconButton(
               icon: const Icon(Icons.home),
-              tooltip: 'home',
+              tooltip: 'Home',
               onPressed: () => Navigator.pushNamed(context, '/home'),
             ),
             IconButton(
@@ -68,6 +68,12 @@ class BaseScaffold extends StatelessWidget {
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Theme.of(context).colorScheme.secondary,
+        onPressed: () => Navigator.pushNamed(context, '/homeChat'),
+        tooltip: 'Chat',
+        child: Icon(Icons.chat, color: Theme.of(context).colorScheme.surface),
       ),
     );
   }

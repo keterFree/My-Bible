@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/screens/baseScaffold.dart';
-import 'package:frontend/screens/book/books.dart';
-import 'package:frontend/screens/book/verses/verses.dart';
+import 'package:frontend/lit_Screens/baseScaffold.dart';
+import 'package:frontend/lit_Screens/book/books.dart';
+import 'package:frontend/lit_Screens/book/verses/verses.dart';
 // import 'package:frontend/db_helper.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart'; // Database functions

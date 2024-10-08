@@ -1,13 +1,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:frontend/chat_Screens/home.dart';
 import 'package:frontend/providers/token_provider.dart';
-import 'package:frontend/screens/account.dart';
-import 'package:frontend/screens/auth/splash.dart';
-import 'package:frontend/screens/book/bookmarks.dart';
-import 'package:frontend/screens/book/books.dart';
-import 'package:frontend/screens/book/highlights.dart';
-import 'package:frontend/screens/error_screen.dart';
-import 'package:frontend/screens/home.dart';
+import 'package:frontend/lit_Screens/account.dart';
+import 'package:frontend/auth/splash.dart';
+import 'package:frontend/lit_Screens/book/bookmarks.dart';
+import 'package:frontend/lit_Screens/book/books.dart';
+import 'package:frontend/lit_Screens/book/highlights.dart';
+import 'package:frontend/lit_Screens/error_screen.dart';
+import 'package:frontend/lit_Screens/home.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -36,7 +37,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Bible App',
-      themeMode: ThemeMode.system, // Automatically switch between light/dark mode
+      themeMode:
+          ThemeMode.system, // Automatically switch between light/dark mode
       theme: _lightTheme(), // Light theme
       darkTheme: _darkTheme(), // Dark theme
       initialRoute: '/',
@@ -47,7 +49,8 @@ class MyApp extends StatelessWidget {
         '/highlights': (context) => const HighlightsScreen(),
         '/bookmarks': (context) => const BookmarksScreen(),
         '/account': (context) => const AccountScreen(),
-        '/error': (context) => const ErrorScreen(), // Added error screen
+        '/error': (context) => const ErrorScreen(),
+        '/homeChat': (context) => ChatHomeScreen(),
       },
       onGenerateRoute: (settings) {
         return MaterialPageRoute(
@@ -79,8 +82,11 @@ class MyApp extends StatelessWidget {
       ),
       textTheme: const TextTheme(
         bodySmall: TextStyle(
-            color: Color(0xFF0D0D0D), fontSize: 15, fontWeight: FontWeight.bold),
-        headlineLarge: TextStyle(color: Color.fromARGB(255, 51, 2, 2)), // #D90B0B
+            color: Color(0xFF0D0D0D),
+            fontSize: 15,
+            fontWeight: FontWeight.bold),
+        headlineLarge:
+            TextStyle(color: Color.fromARGB(255, 51, 2, 2)), // #D90B0B
         bodyLarge: TextStyle(color: Color(0xFF0D0D0D), fontSize: 18), // #0D0D0D
         bodyMedium: TextStyle(color: Color(0xFF0D0D0D), fontSize: 18),
       ),
@@ -90,10 +96,11 @@ class MyApp extends StatelessWidget {
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Color(0xFFBF364F), // #BF364F
-        titleTextStyle: TextStyle(color: Colors.white, fontSize: 20), // White text
+        titleTextStyle:
+            TextStyle(color: Colors.white, fontSize: 20), // White text
       ),
       iconTheme: const IconThemeData(
-        color: Color.fromARGB(255, 240, 159, 165), // #D91424
+        color: Color.fromARGB(255, 146, 16, 27), // #D91424
       ),
     );
   }
@@ -110,7 +117,9 @@ class MyApp extends StatelessWidget {
       ),
       textTheme: const TextTheme(
         bodySmall: TextStyle(
-            color: Color(0xFFF2F2F2), fontSize: 15, fontWeight: FontWeight.bold),
+            color: Color(0xFFF2F2F2),
+            fontSize: 15,
+            fontWeight: FontWeight.bold),
         headlineLarge: TextStyle(color: Color(0xFFF2F2F2)), // #F2F2F2
         bodyLarge: TextStyle(color: Color(0xFFF2F2F2), fontSize: 18), // #F2F2F2
         bodyMedium: TextStyle(color: Color(0xFFF2F2F2), fontSize: 18),
@@ -121,10 +130,11 @@ class MyApp extends StatelessWidget {
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Color(0xFF010D00), // #010D00
-        titleTextStyle: TextStyle(color: Colors.white, fontSize: 20), // White text
+        titleTextStyle:
+            TextStyle(color: Colors.white, fontSize: 20), // White text
       ),
       iconTheme: const IconThemeData(
-        color: Color.fromARGB(255, 255, 146, 146), // #A60311
+        color: Color.fromARGB(255, 146, 16, 27), // #D91424 // #A60311
       ),
     );
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
-import 'package:frontend/screens/baseScaffold.dart';
-import 'package:frontend/screens/book/chapters.dart'; // Screen for displaying chapters
+import 'package:frontend/lit_Screens/baseScaffold.dart';
+import 'package:frontend/lit_Screens/book/chapters.dart'; // Screen for displaying chapters
 import 'package:frontend/db_helper.dart'; // Database function location
 
 class BooksScreen extends StatefulWidget {

@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/auth/login.dart';
 import 'package:frontend/db_helper.dart';
-import 'package:frontend/screens/auth/login.dart';
+import 'package:frontend/lit_Screens/home.dart';
+import 'package:frontend/providers/token_provider.dart';
+// import 'package:frontend/lit_Screens/auth/login.dart';
 import 'package:logger/logger.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -35,55 +40,65 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> initializeApp() async {
-    setState(() {
-      _statusMessage = 'Please be patient\nInitializing the database...';
-      _isLoading = true; // Set loading state
-      _hasError = false; // Reset error state
-    });
+    // Show initial status and loading state
+    _updateStatus('Please be patient\nInitializing the database...',
+        isLoading: true);
 
     try {
       _logger.i('Starting database initialization');
-      // Database initialization
+
+      // Initialize the database
       await DBHelper.initializeDatabase();
 
-      // Update UI after successful initialization
-      setState(() {
-        _statusMessage = 'Initialization successful!';
-        _isLoading = false; // Loading completed
-      });
-
       _logger.i('Initialization successful');
+      _updateStatus('Initialization successful!', isLoading: false);
 
-      // Add a slight delay to display success message
+      // Delay for displaying the success message
       await Future.delayed(const Duration(seconds: 1));
 
-      // Fade-out transition to HomeScreen
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation1, animation2) =>
-                const LoginScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              return FadeTransition(
-                opacity: animation,
-                child: child,
-              );
-            },
-            transitionDuration:
-                const Duration(milliseconds: 500), // Smooth transition
-          ),
-        );
+        // Check if the user is logged in and navigate accordingly
+        await _checkLoggedInStatus();
       }
     } catch (e) {
       _logger.e('Error during initialization: $e');
-      setState(() {
-        _statusMessage = 'Initialization failed: $e\nTap to retry';
-        _hasError = true; // Set error state
-        _isLoading = false; // Reset loading state
-      });
+      _updateStatus('Initialization failed: $e\nTap to retry',
+          hasError: true, isLoading: false);
     }
+  }
+
+// Function to update status and manage loading and error states
+  void _updateStatus(String message,
+      {bool isLoading = false, bool hasError = false}) {
+    setState(() {
+      _statusMessage = message;
+      _isLoading = isLoading;
+      _hasError = hasError;
+    });
+  }
+
+// Check if user is logged in and navigate
+  Future<void> _checkLoggedInStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+
+    Widget nextScreen = (token != null) ? const HomeScreen() : const LoginScreen();
+
+    // Update the token provider if the token exists
+    if (token != null) {
+      Provider.of<TokenProvider>(context, listen: false).setToken(token);
+    }
+
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation1, animation2) => nextScreen,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 500),
+      ),
+    );
   }
 
   // Retry initialization on failure
@@ -131,7 +146,7 @@ class _SplashScreenState extends State<SplashScreen>
                         const SizedBox(
                             height: 16), // Space between image and text
                         Text(
-                          'Bible App',
+                          'E-Pistle Super App',
                           style: Theme.of(context)
                               .textTheme
                               .headlineLarge

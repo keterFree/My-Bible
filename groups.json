@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Sunday School Teachers",
+    "description": "A group for coordinating Sunday school activities, sharing lesson plans, and supporting one another in teaching the young generation.",
+    "members": [],
+    "leaders": []
+  },
+  {
+    "name": "Bible Study Group",
+    "description": "A group for organizing Bible study sessions, sharing devotionals, and diving deeper into scripture.",
+    "members": [],
+    "leaders": []
+  },
+  {
+    "name": "Youth Ministry",
+    "description": "A group dedicated to the youth ministry, discussing events, youth programs, and how to engage young members.",
+    "members": [],
+    "leaders": []
+  },
+  {
+    "name": "Worship Team",
+    "description": "A group for worship leaders, choir members, and musicians to organize worship sessions and share music resources.",
+    "members": [],
+    "leaders": []
+  },
+  {
+    "name": "Prayer Warriors",
+    "description": "A group for dedicated prayer warriors to share prayer requests, hold prayer meetings, and encourage intercessory prayers.",
+    "members": [],
+    "leaders": []
+  }
+]

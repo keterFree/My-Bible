@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:frontend/screens/auth/login.dart';
+import 'package:frontend/auth/login.dart';
 import 'package:frontend/constants.dart'; // Import the constants file
 
 class SignUpScreen extends StatefulWidget {

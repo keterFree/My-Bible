@@ -2,11 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dio/dio.dart'; // Import the Dio package
-import 'package:frontend/screens/home.dart';
-import 'package:frontend/screens/auth/signup.dart';
+import 'package:frontend/lit_Screens/home.dart';
+import 'package:frontend/auth/signup.dart';
 import 'package:frontend/constants.dart'; // Ensure you have the correct path for ApiConstants
 import 'package:frontend/providers/token_provider.dart';
-import 'package:frontend/screens/auth/forgot_password.dart';
+import 'package:frontend/auth/forgot_password.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
