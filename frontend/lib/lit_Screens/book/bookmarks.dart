@@ -50,10 +50,18 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
 
       if (response.statusCode == 200) {
         List bookmarksData = json.decode(response.body);
-        bookmarksData.forEach((bookmark) async {
+
+        // Wait for all async operations to complete
+        for (var bookmark in bookmarksData) {
           bookmark['text'] = await fetchVerse(
               bookmark['book'], bookmark['chapter'], bookmark['verse']);
-        });
+        }
+
+        // OR (alternative) using Future.forEach
+        // await Future.forEach(bookmarksData, (bookmark) async {
+        //   bookmark['text'] = await fetchVerse(
+        //       bookmark['book'], bookmark['chapter'], bookmark['verse']);
+        // });
 
         var groupedData =
             groupBy(bookmarksData, (bookmark) => bookmark['note']);

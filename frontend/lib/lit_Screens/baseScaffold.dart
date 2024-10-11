@@ -59,7 +59,10 @@ class BaseScaffold extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.bookmark),
               tooltip: 'Bookmarks',
-              onPressed: () => Navigator.pushNamed(context, '/bookmarks'),
+              onPressed: () {
+                // final token = Provider.of<TokenProvider>(context).token;
+                Navigator.pushNamed(context, '/bookmarks');
+              },
             ),
             IconButton(
               icon: const Icon(Icons.account_circle),
