@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/chat_Screens/chatScreen.dart';
 
 class GroupsListScreen extends StatelessWidget {
   final List<dynamic> groups;
@@ -54,7 +55,8 @@ class GroupsListScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => GroupScreen(group: groups[index]),
+                    builder: (context) =>
+                        GroupMessageScreen(group: groups[index]),
                   ),
                 );
               },
@@ -66,39 +68,6 @@ class GroupsListScreen extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class GroupScreen extends StatelessWidget {
-  final dynamic group;
-
-  const GroupScreen({super.key, required this.group});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(group['name']),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              group['description'] ?? 'No description available',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Members: ${group['members'].length}',
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-            // Additional content based on group details can go here
-          ],
-        ),
-      ),
     );
   }
 }

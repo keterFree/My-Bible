@@ -122,7 +122,7 @@ class _DirectMessageScreenState extends State<DirectMessageScreen> {
                 color: Colors.white,
               ),
             ),
-            SizedBox(height: 5),
+            const SizedBox(height: 5),
             Text(
               formatTimestamp(message['timestamp']),
               style: TextStyle(

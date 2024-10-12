@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/chat_Screens/createGroup.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/providers/token_provider.dart';
 import 'package:frontend/auth/login.dart';
@@ -10,6 +11,23 @@ class BaseScaffold extends StatelessWidget {
 
   const BaseScaffold({required this.title, required this.body, super.key});
 
+  // Corrected to accept context properly
+  void _handleMenuItemClick(String value, BuildContext context) {
+    switch (value) {
+      case 'Create Group':
+        print('Create Group selected');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => CreateGroupPage()),
+        );
+        break;
+      case 'View Account Details':
+        print('View Account Details selected');
+        // Add logic to navigate to account details page if required
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,6 +35,19 @@ class BaseScaffold extends StatelessWidget {
         iconTheme: Theme.of(context).iconTheme,
         title: Text(title),
         actions: [
+          PopupMenuButton<String>(
+            onSelected: (value) =>
+                _handleMenuItemClick(value, context), // Correct usage here
+            itemBuilder: (BuildContext context) {
+              return {'Create Group', 'View Account Details'}
+                  .map((String choice) {
+                return PopupMenuItem<String>(
+                  value: choice,
+                  child: Text(choice),
+                );
+              }).toList();
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
             onPressed: () async {
@@ -59,10 +90,7 @@ class BaseScaffold extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.bookmark),
               tooltip: 'Bookmarks',
-              onPressed: () {
-                // final token = Provider.of<TokenProvider>(context).token;
-                Navigator.pushNamed(context, '/bookmarks');
-              },
+              onPressed: () => Navigator.pushNamed(context, '/bookmarks'),
             ),
             IconButton(
               icon: const Icon(Icons.account_circle),
