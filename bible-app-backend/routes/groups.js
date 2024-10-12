@@ -1,11 +1,11 @@
 const express = require('express');
 const { getAllGroups, getGroupById, createGroup } = require('../controllers/groupController');
-const { authenticate } = require('../middleware/authMiddleware'); // Assuming you have an auth middleware
-
+const { verifyToken } = require('../middleware/verifyToken'); // Assuming you have an auth middleware
+const { ensureLeader } = require('../middleware/ensureLeader');
 const router = express.Router();
 
-router.get('/', authenticate, getAllGroups);
-router.get('/:id', authenticate, getGroupById);
-router.post('/', authenticate,ensureLeader, createGroup); // Route to create group
+router.get('/', verifyToken, getAllGroups);
+router.get('/:id', verifyToken, getGroupById);
+router.post('/', verifyToken, ensureLeader, createGroup); // Route to create group
 
 module.exports = router;
