@@ -50,7 +50,7 @@ class MyApp extends StatelessWidget {
         '/bookmarks': (context) => const BookmarksScreen(),
         '/account': (context) => const AccountScreen(),
         '/error': (context) => const ErrorScreen(),
-        '/homeChat': (context) => ChatHomeScreen(),
+        '/homeChat': (context) => const ChatHomeScreen(),
       },
       onGenerateRoute: (settings) {
         return MaterialPageRoute(
@@ -151,6 +151,7 @@ Widget screenFactory(String routeName) {
       return const HighlightsScreen();
     case '/bookmarks':
       return const BookmarksScreen();
+    // '/bookmarks': (context) => BookmarksScreen(token: ''),
     case '/account':
       return const AccountScreen();
     default:

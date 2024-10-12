@@ -7,7 +7,8 @@ class UsersListScreen extends StatelessWidget {
   final List<dynamic> users;
   final String currentUser; // Add a parameter for the current user
 
-  const UsersListScreen({super.key, required this.users, required this.currentUser});
+  const UsersListScreen(
+      {super.key, required this.users, required this.currentUser});
 
   @override
   Widget build(BuildContext context) {
@@ -59,9 +60,11 @@ class UsersListScreen extends StatelessWidget {
               ),
               onTap: () async {
                 // Replace with logic to get or create the DirectMessage ID
-                final String? directMessageId = await fetchOrCreateDirectMessageId(
+                final Map? directMessageId = await fetchOrCreateDirectMessageId(
                     currentUser, filteredUsers[index]['_id']);
 
+                print(directMessageId);
+                
                 if (directMessageId != null) {
                   // Navigate to DirectMessageScreen with the correct directMessageId
                   Navigator.push(
@@ -69,7 +72,8 @@ class UsersListScreen extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => DirectMessageScreen(
                         user: filteredUsers[index],
-                        directMessageId: directMessageId, // Pass the directMessageId
+                        directMessage:
+                            directMessageId, // Pass the directMessageId
                       ),
                     ),
                   );
@@ -77,7 +81,8 @@ class UsersListScreen extends StatelessWidget {
                   // Display an error message if directMessageId is null
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Failed to create or fetch direct message ID.'),
+                      content:
+                          Text('Failed to create or fetch direct message ID.'),
                     ),
                   );
                 }
@@ -93,7 +98,8 @@ class UsersListScreen extends StatelessWidget {
     );
   }
 
-  Future<String?> fetchOrCreateDirectMessageId(String currentUser, String filteredUser) async {
+  Future<Map?> fetchOrCreateDirectMessageId(
+      String currentUser, String filteredUser) async {
     try {
       // Initialize Dio with base URL and headers if needed
       Dio dio = Dio();
@@ -118,7 +124,8 @@ class UsersListScreen extends StatelessWidget {
       // Check for a successful response
       if (response.statusCode == 200) {
         final data = response.data;
-        return data['directMessageId']; // Return the direct message ID
+        print("*****data*****\n${response.data}");
+        return data; // Return the direct message ID
       } else {
         print(
             'Failed to fetch or create direct message: ${response.statusCode} - ${response.data}');
@@ -127,7 +134,8 @@ class UsersListScreen extends StatelessWidget {
     } on DioError catch (dioError) {
       if (dioError.response != null) {
         // DioError with server response
-        print('DioError: ${dioError.response?.data} - Status: ${dioError.response?.statusCode}');
+        print(
+            'DioError: ${dioError.response?.data} - Status: ${dioError.response?.statusCode}');
       } else {
         // DioError without response (like a network error)
         print('DioError: ${dioError.message}');

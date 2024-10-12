@@ -50,7 +50,13 @@ class GroupsListScreen extends StatelessWidget {
                 ),
               ),
               onTap: () {
-                // Handle group item tap
+                // Navigate to GroupScreen, passing the group details
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => GroupScreen(group: groups[index]),
+                  ),
+                );
               },
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 12,
@@ -60,6 +66,39 @@ class GroupsListScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class GroupScreen extends StatelessWidget {
+  final dynamic group;
+
+  const GroupScreen({super.key, required this.group});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(group['name']),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              group['description'] ?? 'No description available',
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Members: ${group['members'].length}',
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+            // Additional content based on group details can go here
+          ],
+        ),
+      ),
     );
   }
 }

@@ -5,21 +5,19 @@ import 'package:frontend/providers/token_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
-class DirectMessageScreen extends StatefulWidget {
-  final dynamic user;
-  final Map directMessage;
+class GroupMessageScreen extends StatefulWidget {
+  final dynamic group;
 
-  const DirectMessageScreen(
-      {super.key, required this.user, required this.directMessage});
+  const GroupMessageScreen({super.key, required this.group});
 
   @override
-  _DirectMessageScreenState createState() => _DirectMessageScreenState();
+  _GroupMessageScreenState createState() => _GroupMessageScreenState();
 }
 
-class _DirectMessageScreenState extends State<DirectMessageScreen> {
+class _GroupMessageScreenState extends State<GroupMessageScreen> {
   late IO.Socket socket;
   final TextEditingController _messageController = TextEditingController();
-  List<dynamic> messages = []; // To store messages locally
+  List<dynamic> messages = []; // To store group messages locally
   String userId = '';
   String userName = 'Anonymous';
   String userContacts = '';
@@ -28,12 +26,9 @@ class _DirectMessageScreenState extends State<DirectMessageScreen> {
   void initState() {
     super.initState();
     initializeSocketConnection();
-    // Populate initial messages from widget
-    messages = widget.directMessage['messages'];
   }
 
   void initializeSocketConnection() {
-    // Initialize the socket connection
     socket = IO.io(ApiConstants.authbaseUrl, <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': false,
@@ -41,31 +36,21 @@ class _DirectMessageScreenState extends State<DirectMessageScreen> {
 
     socket.connect();
 
-    // Listen for connection errors
-    socket.onConnectError((data) {
-      print('Connection error: $data');
-    });
-
-    // Listen for successful connection
     socket.onConnect((_) {
       print('Connected to socket server');
-      // Join the room for the current direct message conversation
-      socket.emit('joinRoom',
-          {'directMessage': widget.directMessage['directMessageId']});
+      // Join the group room
+      socket.emit('joinGroup', {
+        'groupId': widget.group['groupId'],
+        'userId': userId,
+      });
     });
 
-    // Listen for messages from the server
-    socket.on('receiveDirectMessage', (data) {
-      print('Message received: $data');
-      // Only add the message if it's from another user
-      if (data['sender'] != userId) {
-        setState(() {
-          messages.add(data); // Add new message to the list
-        });
-      }
+    socket.on('receiveGroupMessage', (data) {
+      setState(() {
+        messages.add(data); // Add the received message to the list
+      });
     });
 
-    // Handle disconnection
     socket.onDisconnect((_) {
       print('Disconnected from server');
     });
@@ -75,21 +60,17 @@ class _DirectMessageScreenState extends State<DirectMessageScreen> {
     if (message.trim().isEmpty) return;
     final newMessage = {
       'content': message,
-      'sender': userId, // Replace with actual sender ID if available
-      'timestamp': DateTime.now().toIso8601String(), // Add a timestamp locally
+      'sender': userId,
+      'timestamp': DateTime.now().toIso8601String(),
     };
 
-    // Send a direct message to the server
-    socket.emit('sendDirectMessage', {
-      'directMessageId': widget.directMessage[
-          "directMessageId"], // Use the directMessage from the widget
+    socket.emit('sendGroupMessage', {
+      'groupId': widget.group['groupId'],
       'message': newMessage,
+      'userId': userId,
     });
 
-    // Clear the message input field
     _messageController.clear();
-
-    // Add the sent message to the list locally
     setState(() {
       messages.add(newMessage);
     });
@@ -118,17 +99,12 @@ class _DirectMessageScreenState extends State<DirectMessageScreen> {
           children: [
             Text(
               message['content'] ?? '',
-              style: const TextStyle(
-                color: Colors.white,
-              ),
+              style: const TextStyle(color: Colors.white),
             ),
-            SizedBox(height: 5),
+            const SizedBox(height: 5),
             Text(
               formatTimestamp(message['timestamp']),
-              style: TextStyle(
-                fontSize: 10,
-                color: isCurrentUser ? Colors.white70 : Colors.black54,
-              ),
+              style: TextStyle(fontSize: 10, color: Colors.white70),
             ),
           ],
         ),
@@ -159,9 +135,10 @@ class _DirectMessageScreenState extends State<DirectMessageScreen> {
     } catch (e) {
       print('Error decoding token: $e');
     }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.user['name']),
+        title: Text(widget.group['name']),
       ),
       body: Column(
         children: [
@@ -174,18 +151,23 @@ class _DirectMessageScreenState extends State<DirectMessageScreen> {
               },
             ),
           ),
-          Padding(
+          Container(
             padding: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(20),
+            ),
             child: Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _messageController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: 'Type a message...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                      border: InputBorder.none,
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     ),
                   ),
                 ),
@@ -196,7 +178,7 @@ class _DirectMessageScreenState extends State<DirectMessageScreen> {
                       sendMessage(_messageController.text);
                     }
                   },
-                )
+                ),
               ],
             ),
           ),
@@ -207,7 +189,6 @@ class _DirectMessageScreenState extends State<DirectMessageScreen> {
 
   @override
   void dispose() {
-    // Clean up the socket connection
     socket.disconnect();
     socket.dispose();
     _messageController.dispose();
