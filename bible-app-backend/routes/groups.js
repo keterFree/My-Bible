@@ -1,7 +1,7 @@
 const express = require('express');
 const { getAllGroups, getGroupById, createGroup } = require('../controllers/groupController');
-const { verifyToken } = require('../middleware/verifyToken'); // Assuming you have an auth middleware
-const { ensureLeader } = require('../middleware/ensureLeader');
+const verifyToken = require('../middleware/verifyToken'); // Assuming you have an auth middleware
+const ensureLeader = require('../middleware/ensureLeader');
 const router = express.Router();
 
 router.get('/', verifyToken, getAllGroups);

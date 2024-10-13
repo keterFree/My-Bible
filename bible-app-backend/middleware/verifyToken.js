@@ -18,11 +18,11 @@ const verifyToken = (req, res, next) => {
 
     // Verify and decode the token
     const decoded = jwt.verify(bearer[1], process.env.JWT_SECRET);
-    req.user = decoded.user;
+    req.user = decoded.user; // Ensure `decoded.user` contains relevant info
     next();
   } catch (err) {
     console.error('Token verification error:', err.message);
-    res.status(401).json({ msg: 'Token is not valid' });
+    return res.status(401).json({ msg: 'Token is not valid' });
   }
 };
 
