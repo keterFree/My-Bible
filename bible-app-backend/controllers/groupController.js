@@ -33,7 +33,7 @@ const getGroupById = async (req, res) => {
 // Controller to create a new group
 const createGroup = async (req, res) => {
   const { name, restricted, description, members, leaders } = req.body;
-  const creator = req.user._id; // Assuming the user is authenticated and `req.user` is set
+  const creator = req.user.id; // Assuming the user is authenticated and `req.user` is set
 
   try {
     const group = new Group({

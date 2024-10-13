@@ -56,7 +56,7 @@ exports.login = [
             if (!isMatch) {
                 return res.status(400).json({ msg: 'Invalid credentials' });
             }
-            const payload = { user: { id: user.id, name: user.name, phone: user.phone } };
+            const payload = { user: { id: user.id, name: user.name, phone: user.phone, tier:user.tier} };
             jwt.sign(
                 payload,
                 process.env.JWT_SECRET,

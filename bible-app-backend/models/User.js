@@ -6,7 +6,7 @@ const UserSchema = new mongoose.Schema({
   phone: { type: String, required: true, index: { unique: true } },
   bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Bookmark' }],
   highlights: [{ verseId: String, color: String }],
-  tier: { type: String, enum: ['leader', 'member'], default: 'member' },
+  tier: { type: String, enum: ['admin', 'member'], default: 'member' },
   groups: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Group' }], // Groups the user is part of
   directMessages: [{ type: mongoose.Schema.Types.ObjectId, ref: 'DirectMessage' }] // One-on-one messages
 });
