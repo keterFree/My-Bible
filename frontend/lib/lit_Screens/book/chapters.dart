@@ -9,7 +9,7 @@ import 'package:sqflite/sqflite.dart'; // Database functions
 class ChaptersScreen extends StatefulWidget {
   final int bookNumber;
 
-  const ChaptersScreen({Key? key, required this.bookNumber}) : super(key: key);
+  const ChaptersScreen({super.key, required this.bookNumber});
 
   @override
   _ChaptersScreenState createState() => _ChaptersScreenState();

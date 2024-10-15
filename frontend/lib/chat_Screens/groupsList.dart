@@ -15,11 +15,11 @@ class GroupsListScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 1, vertical: 2),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              // color: Colors.white,
               borderRadius: BorderRadius.circular(7),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.3),
+                  color: Colors.grey.withOpacity(0.2),
                   spreadRadius: 1,
                   blurRadius: 4,
                   offset: const Offset(0, 3), // Changes position of shadow
@@ -29,24 +29,24 @@ class GroupsListScreen extends StatelessWidget {
             child: ListTile(
               leading: Icon(Icons.group,
                   color: Theme.of(context).colorScheme.secondary),
-              title: Text(
-                groups[index]['name'],
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
+              title: Text(groups[index]['name'],
+                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      )),
               subtitle: Text(
                 '${groups[index]['description'] ?? 'No description available'}',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600], // Lighter color for subtitle
-                ),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall!
+                    .copyWith(fontSize: 12, fontStyle: FontStyle.italic),
               ),
               trailing: Text(
-                'Members: ${groups[index]['members'].length}',
+                groups[index]['members'].length == 0
+                    ? 'no members'
+                    : '${groups[index]['members'].length} members',
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 12,
                   color: Colors.green[700],
                 ),
               ),

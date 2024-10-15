@@ -24,10 +24,10 @@ class UsersListScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 1, vertical: 2),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.3),
+              // color: Colors.white.withOpacity(0.3),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.3),
+                  color: Colors.grey.withOpacity(0.2),
                   spreadRadius: 1,
                   blurRadius: 4,
                   offset: const Offset(0, 3), // Changes position of shadow
@@ -39,17 +39,16 @@ class UsersListScreen extends StatelessWidget {
                   color: Theme.of(context).colorScheme.secondary),
               title: Text(
                 filteredUsers[index]['name'],
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold, // Make the title bold
-                  fontSize: 16, // Set font size for title
-                ),
+                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                      fontWeight: FontWeight.bold, // Make the title bold
+                      fontSize: 16, // Set font size for title
+                    ),
               ),
               subtitle: Text(
                 filteredUsers[index]['phone'],
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600], // Set a lighter color for subtitle
-                ),
+                style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                      fontSize: 12,
+                    ),
               ),
               trailing: Text(
                 filteredUsers[index]["tier"],
@@ -64,7 +63,7 @@ class UsersListScreen extends StatelessWidget {
                     currentUser, filteredUsers[index]['_id']);
 
                 print(directMessageId);
-                
+
                 if (directMessageId != null) {
                   // Navigate to DirectMessageScreen with the correct directMessageId
                   Navigator.push(

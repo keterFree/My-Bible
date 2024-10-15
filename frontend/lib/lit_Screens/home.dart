@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -134,7 +134,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  const Icon(Icons.account_circle, size: 50),
+                  Icon(
+                    Icons.account_circle,
+                    size: 50,
+                    color: Theme.of(context)
+                        .appBarTheme
+                        .titleTextStyle!
+                        .color!
+                        .withOpacity(0.8),
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
@@ -161,7 +169,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           verseContent,
                           style:
                               Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    fontSize: 24,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
                                   ),
                           // textAlign: TextAlign.center,
                         ),

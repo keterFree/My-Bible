@@ -25,8 +25,8 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/bookmarks', require('./routes/bookmarks'));
 app.use('/api/highlights', require('./routes/highlights'));
-app.use('/api/users', require('./routes/users')); // Use user routes under /api/usersconst 
-app.use('/api/groups', require('./routes/groups')); // Use group routes under /api/groupsconst 
+app.use('/api/users', require('./routes/users'));
+app.use('/api/groups', require('./routes/groups'));
 app.use('/api/direct', require('./routes/directMessages'));
 
 // Serve static files from the public directory

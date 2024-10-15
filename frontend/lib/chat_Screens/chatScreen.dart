@@ -1,9 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:frontend/chat_Screens/addMembers.dart';
+import 'package:frontend/chat_Screens/groupDetails.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:provider/provider.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:frontend/providers/token_provider.dart';
 import 'package:frontend/constants.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 abstract class BaseMessageScreen extends StatefulWidget {
   final String title;
@@ -50,6 +56,9 @@ abstract class _BaseMessageScreenState<T extends BaseMessageScreen>
 
   Widget buildMessageBubble(dynamic message) {
     bool isCurrentUser = message['sender'] == userId;
+    String senderName =
+        isCurrentUser ? 'You' : message['senderName'] ?? 'Anonymous';
+
     return Align(
       alignment: isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -64,14 +73,25 @@ abstract class _BaseMessageScreenState<T extends BaseMessageScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Display sender name in bold font
+            Text(
+              senderName,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 5),
+            // Display the message content
             Text(
               message['content'] ?? '',
               style: const TextStyle(color: Colors.white),
             ),
             const SizedBox(height: 5),
+            // Display timestamp
             Text(
               formatTimestamp(message['timestamp']),
-              style: TextStyle(fontSize: 10, color: Colors.white70),
+              style: const TextStyle(fontSize: 10, color: Colors.white70),
             ),
           ],
         ),
@@ -82,7 +102,7 @@ abstract class _BaseMessageScreenState<T extends BaseMessageScreen>
   String formatTimestamp(String? timestamp) {
     if (timestamp == null) return '';
     final dateTime = DateTime.parse(timestamp);
-    return '${dateTime.hour}:${dateTime.minute}';
+    return DateFormat('h:mm a').format(dateTime); // E.g., 3:45 PM
   }
 
   Widget buildMessageInput() {
@@ -93,11 +113,14 @@ abstract class _BaseMessageScreenState<T extends BaseMessageScreen>
           Expanded(
             child: TextField(
               controller: _messageController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Type a message...',
-                border: InputBorder.none,
-                filled: true,
-                fillColor: Colors.white,
+                hintStyle: Theme.of(context).textTheme.bodyMedium,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: BorderSide.none,
+                ),
+                fillColor: Theme.of(context).cardColor,
                 contentPadding:
                     EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               ),
@@ -139,6 +162,67 @@ class GroupMessageScreen extends BaseMessageScreen {
 
 class _GroupMessageScreenState
     extends _BaseMessageScreenState<GroupMessageScreen> {
+  bool isLeader = false; // Track if the user is a group leader
+  bool isMember = false;
+
+  @override
+  void initState() {
+    super.initState();
+    initializeSocketConnection();
+    checkUserRole();
+    fetchPreviousMessages();
+  }
+
+  // Mock function to determine if the user is a leader or member
+  void checkUserRole() {
+    print("${widget.group['members'][0]} -> $userId");
+
+    // for members in widget.group['members']
+
+    setState(() {
+      for (var leader in widget.group['leaders']) {
+        if (leader["_id"] == userId) {
+          isLeader = true;
+          print("is Leader");
+        }
+      }
+      for (var member in widget.group['members']) {
+        if (member["_id"] == userId) {
+          isMember = true;
+          print("is Member");
+        }
+      }
+    });
+  }
+
+  void fetchPreviousMessages() async {
+    final token = Provider.of<TokenProvider>(context, listen: false).token;
+    final groupId = widget.group['_id'];
+    print("$groupId --> $token");
+    final url =
+        '${ApiConstants.groupMessages}/$groupId'; // Assuming this is the endpoint
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> fetchedMessages = jsonDecode(response.body);
+
+        setState(() {
+          messages = fetchedMessages; // Add fetched messages to the state
+        });
+      } else {
+        print('Failed to load messages: ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching messages: $e');
+    }
+  }
+
   @override
   void initializeSocketConnection() {
     socket = IO.io(ApiConstants.authbaseUrl, <String, dynamic>{
@@ -150,89 +234,16 @@ class _GroupMessageScreenState
     socket.onConnect((_) {
       print('Connected to socket server');
       socket.emit('joinGroup', {
-        'groupId': widget.group['groupId'],
+        'groupId': widget.group['_id'],
         'userId': userId,
       });
     });
 
-    socket.on('receiveGroupMessage', (data) {
-      setState(() {
-        messages.add(data);
-      });
-    });
-
-    socket.onDisconnect((_) => print('Disconnected from server'));
-  }
-
-  @override
-  void sendMessage(String messageContent) {
-    final newMessage = {
-      'content': messageContent,
-      'sender': userId,
-      'timestamp': DateTime.now().toIso8601String(),
-    };
-
-    socket.emit('sendGroupMessage', {
-      'groupId': widget.group['groupId'],
-      'message': newMessage,
-      'userId': userId,
-    });
-
-    setState(() {
-      messages.add(newMessage);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: messages.length,
-              itemBuilder: (context, index) {
-                final message = messages[index];
-                return buildMessageBubble(message);
-              },
-            ),
-          ),
-          buildMessageInput(),
-        ],
-      ),
-    );
-  }
-}
-
-class DirectMessageScreen extends BaseMessageScreen {
-  final dynamic user;
-  final Map directMessage;
-
-  DirectMessageScreen({
-    super.key,
-    required this.user,
-    required this.directMessage,
-  }) : super(title: user['name']);
-
-  @override
-  _DirectMessageScreenState createState() => _DirectMessageScreenState();
-}
-
-class _DirectMessageScreenState
-    extends _BaseMessageScreenState<DirectMessageScreen> {
-  @override
-  void initializeSocketConnection() {
-    socket = IO.io(ApiConstants.authbaseUrl, <String, dynamic>{
-      'transports': ['websocket'],
-      'autoConnect': false,
-    });
-
-    socket.connect();
-    socket.onConnect((_) {
-      print('Connected to socket server');
-      socket.emit('joinRoom', {
-        'directMessage': widget.directMessage['directMessageId'],
+    socket.onReconnect((_) {
+      print('Reconnected to the server');
+      socket.emit('joinGroup', {
+        'groupId': widget.group['_id'],
+        'userId': userId,
       });
     });
 
@@ -249,26 +260,93 @@ class _DirectMessageScreenState
 
   @override
   void sendMessage(String messageContent) {
-    final newMessage = {
-      'content': messageContent,
-      'sender': userId,
-      'timestamp': DateTime.now().toIso8601String(),
-    };
+    try {
+      final newMessage = {
+        'content': messageContent,
+        'sender': userId,
+        'timestamp': DateTime.now().toIso8601String(),
+      };
 
-    socket.emit('sendDirectMessage', {
-      'directMessageId': widget.directMessage['directMessageId'],
-      'message': newMessage,
-    });
+      socket.emit('sendGroupMessage', {
+        'groupId': widget.group['_id'],
+        'message': newMessage,
+        'userId': userId,
+      });
 
-    setState(() {
-      messages.add(newMessage);
-    });
+      setState(() {
+        messages.add(newMessage);
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to send message')),
+      );
+    }
+  }
+
+  // Handlers for PopupMenu actions
+  void onAddMembers() {
+    print(widget.group["name"]);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddMembersOrLeadersPage(groupObj: widget.group),
+      ),
+    );
+  }
+
+  void onRequestToJoin() {
+    // TODO: Implement the logic to request to join
+    print('Request to Join clicked');
+  }
+
+  void moreOnGroup() {
+    print('More on group');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MoreOnGroup(groupObj: widget.group),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      appBar: AppBar(
+        title: Text(widget.group['name']),
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'addMembers') {
+                onAddMembers();
+              } else if (value == 'requestToJoin') {
+                onRequestToJoin();
+              } else if (value == 'more') {
+                moreOnGroup();
+              }
+            },
+            itemBuilder: (context) {
+              return <PopupMenuEntry<String>>[
+                if (isLeader)
+                  const PopupMenuItem<String>(
+                    value: 'addMembers',
+                    child: Text('Add Members'),
+                  ),
+                if (!isMember)
+                  const PopupMenuItem<String>(
+                    value: 'requestToJoin',
+                    child: Text('Request to Join Group'),
+                  ),
+                const PopupMenuItem<String>(
+                  value: 'more',
+                  child: Text('Group details'),
+                ),
+              ];
+            },
+            icon: const Icon(Icons.more_vert),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Expanded(
@@ -283,6 +361,16 @@ class _DirectMessageScreenState
           buildMessageInput(),
         ],
       ),
+      floatingActionButton: !isMember
+          ? FloatingActionButton(
+              onPressed: () {
+                if (isLeader) onAddMembers();
+                if (!isMember) onRequestToJoin();
+              },
+              backgroundColor: Theme.of(context).colorScheme.secondary,
+              child: const Icon(Icons.group_add_sharp),
+            )
+          : const SizedBox(),
     );
   }
 }

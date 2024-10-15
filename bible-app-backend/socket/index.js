@@ -1,5 +1,6 @@
 const Message = require('../models/Message');
 const DirectMessage = require('../models/DirectMessage');
+const Group = require('../models/Group');
 
 const socketHandler = (io) => {
   io.on('connection', (socket) => {

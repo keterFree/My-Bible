@@ -1,15 +1,16 @@
 class ApiConstants {
-  static const String authbaseUrl = 'https://my-bible-backend.onrender.com';
-  // static const String authbaseUrl = 'http://10.0.2.2:5000';
+  // static const String authbaseUrl = 'https://my-bible-backend.onrender.com';
+  static const String authbaseUrl = 'http://10.0.2.2:5000';
   static const String loginEndpoint = '$authbaseUrl/api/auth/login';
   static const String registerEndpoint = '$authbaseUrl/api/auth/register';
+  static const String user = '$authbaseUrl/api/users';
   static const String highlightsEndpoint = '$authbaseUrl/api/highlights';
   static const String accDetailsEndpoint = '$authbaseUrl/api/auth/profile';
   static const String bookMarkEndpoint = '$authbaseUrl/api/bookmarks';
   static const String directMessageEndpoint = '$authbaseUrl/api/direct';
   static const String group = '$authbaseUrl/api/groups';
-  static const String user = '$authbaseUrl/api/users';
-
+  static const String addToGroup = '$authbaseUrl/api/groups/add';
+  static const String groupMessages = '$authbaseUrl/api/groups/messages';
   static const String passwordResetSendEndpoint =
       '$authbaseUrl/api/auth/password-reset/send';
   static const String passwordResetVerifyEndpoint =

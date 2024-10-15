@@ -14,9 +14,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Initialize the appropriate database factory based on the platform
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    // Use sqflite_ffi for desktop platforms
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
@@ -37,10 +35,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Bible App',
-      themeMode:
-          ThemeMode.system, // Automatically switch between light/dark mode
-      theme: _lightTheme(), // Light theme
-      darkTheme: _darkTheme(), // Dark theme
+      themeMode: ThemeMode.system,
+      theme: _lightTheme(),
+      darkTheme: _darkTheme(),
       initialRoute: '/',
       routes: {
         '/': (context) => const SplashScreen(),
@@ -61,7 +58,7 @@ class MyApp extends StatelessWidget {
             Widget screen = screenFactory(settings.name!);
             if (screen is SplashScreen && settings.name != '/') {
               debugPrint('Unknown route: ${settings.name}');
-              return const ErrorScreen(); // Use error screen for unknown routes
+              return const ErrorScreen();
             }
             return screen;
           },
@@ -70,14 +67,13 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  // Light Theme Configuration
   ThemeData _lightTheme() {
     return ThemeData(
-      primaryColor: const Color(0xFFD90B0B), // #D90B0B
+      primaryColor: const Color(0xFF8C1127), // #8C1127
       scaffoldBackgroundColor: const Color(0xFFF2F2F2), // #F2F2F2
       colorScheme: ColorScheme.fromSwatch().copyWith(
-        primary: const Color(0xFFD91424), // #D91424
-        secondary: const Color(0xFFBF364F), // #BF364F
+        primary: const Color(0xFFF2274C), // #F2274C
+        secondary: const Color(0xFFA61C41), // #A61C41
         surface: const Color(0xFFF2F2F2), // #F2F2F2
       ),
       textTheme: const TextTheme(
@@ -85,34 +81,39 @@ class MyApp extends StatelessWidget {
             color: Color(0xFF0D0D0D),
             fontSize: 15,
             fontWeight: FontWeight.bold),
-        headlineLarge:
-            TextStyle(color: Color.fromARGB(255, 51, 2, 2)), // #D90B0B
-        bodyLarge: TextStyle(color: Color(0xFF0D0D0D), fontSize: 18), // #0D0D0D
-        bodyMedium: TextStyle(color: Color(0xFF0D0D0D), fontSize: 18),
+        headlineLarge: TextStyle(color: Color(0xFF731212)), // #731212
+        bodyLarge: TextStyle(
+            color: Color(0xFF0D0D0D),
+            fontSize: 18,
+            fontWeight: FontWeight.bold), // #0D0D0D
+        bodyMedium: TextStyle(
+            color: Color(0xFF0D0D0D),
+            fontSize: 18,
+            fontWeight: FontWeight.bold),
       ),
       buttonTheme: const ButtonThemeData(
-        buttonColor: Color(0xFFBF364F), // #BF364F
+        buttonColor: Color(0xFFA61C41), // #A61C41
         textTheme: ButtonTextTheme.primary,
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFFBF364F), // #BF364F
-        titleTextStyle:
-            TextStyle(color: Colors.white, fontSize: 20), // White text
+        backgroundColor: Color.fromARGB(158, 218, 119, 145), // #A61C41
+        titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
       ),
       iconTheme: const IconThemeData(
-        color: Color.fromARGB(255, 146, 16, 27), // #D91424
+        color: Color.fromARGB(255, 185, 29, 29), // #731212
       ),
     );
   }
 
-  // Dark Theme Configuration
   ThemeData _darkTheme() {
     return ThemeData(
       primaryColor: const Color(0xFFF2F2F2), // #F2F2F2
-      scaffoldBackgroundColor: const Color(0xFF8C808C), // #8C808C
+      // scaffoldBackgroundColor: const Color(0xFF8C808C), // #8C808C
+
+      scaffoldBackgroundColor: const Color.fromARGB(255, 0, 0, 0), // #8C808C
       colorScheme: ColorScheme.fromSwatch().copyWith(
         primary: const Color(0xFFF2F2F2), // #F2F2F2
-        secondary: const Color(0xFFA60311), // #A60311
+        secondary: const Color(0xFF731212), // #731212
         surface: const Color(0xFF8C808C), // #8C808C
       ),
       textTheme: const TextTheme(
@@ -121,8 +122,14 @@ class MyApp extends StatelessWidget {
             fontSize: 15,
             fontWeight: FontWeight.bold),
         headlineLarge: TextStyle(color: Color(0xFFF2F2F2)), // #F2F2F2
-        bodyLarge: TextStyle(color: Color(0xFFF2F2F2), fontSize: 18), // #F2F2F2
-        bodyMedium: TextStyle(color: Color(0xFFF2F2F2), fontSize: 18),
+        bodyLarge: TextStyle(
+            color: Color(0xFFF2F2F2),
+            fontSize: 18,
+            fontWeight: FontWeight.bold), // #F2F2F2
+        bodyMedium: TextStyle(
+            color: Color(0xFFF2F2F2),
+            fontSize: 18,
+            fontWeight: FontWeight.bold),
       ),
       buttonTheme: const ButtonThemeData(
         buttonColor: Color(0xFF010D00), // #010D00
@@ -130,17 +137,15 @@ class MyApp extends StatelessWidget {
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Color(0xFF010D00), // #010D00
-        titleTextStyle:
-            TextStyle(color: Colors.white, fontSize: 20), // White text
+        titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
       ),
       iconTheme: const IconThemeData(
-        color: Color.fromARGB(255, 146, 16, 27), // #D91424 // #A60311
+        color: Color(0xFFD93030), // #D93030
       ),
     );
   }
 }
 
-// Factory Pattern for screen creation
 Widget screenFactory(String routeName) {
   switch (routeName) {
     case '/home':
@@ -151,10 +156,9 @@ Widget screenFactory(String routeName) {
       return const HighlightsScreen();
     case '/bookmarks':
       return const BookmarksScreen();
-    // '/bookmarks': (context) => BookmarksScreen(token: ''),
     case '/account':
       return const AccountScreen();
     default:
-      return const SplashScreen(); // Fallback to the splash screen for unknown routes
+      return const SplashScreen();
   }
 }

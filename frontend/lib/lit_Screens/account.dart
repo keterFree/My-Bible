@@ -208,6 +208,11 @@ class _AccountScreenState extends State<AccountScreen> {
               const SizedBox(height: 16),
               // Clickable tile for editing name
               ListTile(
+                tileColor: Theme.of(context)
+                    .appBarTheme
+                    .titleTextStyle!
+                    .color!
+                    .withOpacity(0.4),
                 leading: Icon(
                   isEditingName ? Icons.cancel : Icons.edit,
                   color: Theme.of(context).primaryColor,
@@ -263,6 +268,11 @@ class _AccountScreenState extends State<AccountScreen> {
 
               // Clickable tile for editing phone number
               ListTile(
+                tileColor: Theme.of(context)
+                    .appBarTheme
+                    .titleTextStyle!
+                    .color!
+                    .withOpacity(0.4),
                 leading: Icon(
                   isEditingPhone ? Icons.cancel : Icons.edit,
                   color: Theme.of(context).primaryColor,
@@ -329,6 +339,11 @@ class _AccountScreenState extends State<AccountScreen> {
 
               // Clickable tile for changing password
               ListTile(
+                tileColor: Theme.of(context)
+                    .appBarTheme
+                    .titleTextStyle!
+                    .color!
+                    .withOpacity(0.4),
                 leading: Icon(
                   isChangingPassword ? Icons.cancel : Icons.lock,
                   color: Theme.of(context).primaryColor,

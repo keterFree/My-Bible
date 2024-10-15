@@ -2,6 +2,7 @@ import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
 import 'package:frontend/providers/token_provider.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
@@ -138,8 +139,8 @@ class _DirectMessageScreenState extends State<DirectMessageScreen> {
 
   String formatTimestamp(String? timestamp) {
     if (timestamp == null) return '';
-    DateTime dateTime = DateTime.parse(timestamp);
-    return '${dateTime.hour}:${dateTime.minute}';
+    final dateTime = DateTime.parse(timestamp);
+    return DateFormat('h:mm a').format(dateTime); // E.g., 3:45 PM
   }
 
   @override

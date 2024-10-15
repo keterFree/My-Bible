@@ -5,6 +5,8 @@ import '../providers/token_provider.dart';
 import '../constants.dart'; // Ensure ApiConstants.group is defined
 
 class CreateGroupPage extends StatefulWidget {
+  const CreateGroupPage({super.key});
+
   @override
   _CreateGroupPageState createState() => _CreateGroupPageState();
 }
