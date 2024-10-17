@@ -55,9 +55,9 @@ abstract class _BaseMessageScreenState<T extends BaseMessageScreen>
   void sendMessage(String messageContent);
 
   Widget buildMessageBubble(dynamic message) {
-    bool isCurrentUser = message['sender'] == userId;
+    bool isCurrentUser = message['sender']["_id"] == userId;
     String senderName =
-        isCurrentUser ? 'You' : message['senderName'] ?? 'Anonymous';
+        isCurrentUser ? 'You' : message['sender']["name"] ?? 'Anonymous';
 
     return Align(
       alignment: isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
@@ -78,6 +78,7 @@ abstract class _BaseMessageScreenState<T extends BaseMessageScreen>
               senderName,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
+                fontSize: 12,
                 color: Colors.white,
               ),
             ),
@@ -311,66 +312,93 @@ class _GroupMessageScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.group['name']),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'addMembers') {
-                onAddMembers();
-              } else if (value == 'requestToJoin') {
-                onRequestToJoin();
-              } else if (value == 'more') {
-                moreOnGroup();
-              }
-            },
-            itemBuilder: (context) {
-              return <PopupMenuEntry<String>>[
-                if (isLeader)
-                  const PopupMenuItem<String>(
-                    value: 'addMembers',
-                    child: Text('Add Members'),
-                  ),
-                if (!isMember)
-                  const PopupMenuItem<String>(
-                    value: 'requestToJoin',
-                    child: Text('Request to Join Group'),
-                  ),
-                const PopupMenuItem<String>(
-                  value: 'more',
-                  child: Text('Group details'),
+    bool isDarkMode =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+            Brightness.dark;
+    String backgroundImage =
+        isDarkMode ? 'assets/images/pdark.jpeg' : 'assets/images/plight.jpg';
+
+    return Stack(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage(backgroundImage),
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                  isDarkMode
+                      ? Colors.black.withOpacity(0.2)
+                      : Colors.white.withOpacity(0.2),
+                  isDarkMode ? BlendMode.darken : BlendMode.lighten,
                 ),
-              ];
-            },
-            icon: const Icon(Icons.more_vert),
+                alignment: Alignment.topLeft),
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: messages.length,
-              itemBuilder: (context, index) {
-                final message = messages[index];
-                return buildMessageBubble(message);
-              },
-            ),
+        ),
+        Scaffold(
+          backgroundColor:
+              Theme.of(context).scaffoldBackgroundColor.withOpacity(0.3),
+          appBar: AppBar(
+            backgroundColor: Theme.of(context).appBarTheme.backgroundColor!.withOpacity(0.8),
+            title: Text(widget.group['name']),
+            actions: [
+              PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'addMembers') {
+                    onAddMembers();
+                  } else if (value == 'requestToJoin') {
+                    onRequestToJoin();
+                  } else if (value == 'more') {
+                    moreOnGroup();
+                  }
+                },
+                itemBuilder: (context) {
+                  return <PopupMenuEntry<String>>[
+                    if (isLeader)
+                      const PopupMenuItem<String>(
+                        value: 'addMembers',
+                        child: Text('Add Members'),
+                      ),
+                    if (!isMember)
+                      const PopupMenuItem<String>(
+                        value: 'requestToJoin',
+                        child: Text('Request to Join Group'),
+                      ),
+                    const PopupMenuItem<String>(
+                      value: 'more',
+                      child: Text('Group details'),
+                    ),
+                  ];
+                },
+                icon: const Icon(Icons.more_vert),
+              ),
+            ],
           ),
-          buildMessageInput(),
-        ],
-      ),
-      floatingActionButton: !isMember
-          ? FloatingActionButton(
-              onPressed: () {
-                if (isLeader) onAddMembers();
-                if (!isMember) onRequestToJoin();
-              },
-              backgroundColor: Theme.of(context).colorScheme.secondary,
-              child: const Icon(Icons.group_add_sharp),
-            )
-          : const SizedBox(),
+          body: Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    final message = messages[index];
+                    return buildMessageBubble(message);
+                  },
+                ),
+              ),
+              buildMessageInput(),
+            ],
+          ),
+          floatingActionButton: !isMember
+              ? FloatingActionButton(
+                  onPressed: () {
+                    if (isLeader) onAddMembers();
+                    if (!isMember) onRequestToJoin();
+                  },
+                  backgroundColor: Theme.of(context).colorScheme.secondary,
+                  child: const Icon(Icons.group_add_sharp),
+                )
+              : const SizedBox(),
+        ),
+      ],
     );
   }
 }

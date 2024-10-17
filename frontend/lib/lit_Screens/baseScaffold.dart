@@ -32,8 +32,9 @@ class BaseScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Select background image based on the current theme
-    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    bool isDarkMode =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+            Brightness.dark;
     String backgroundImage = isDarkMode
         ? 'assets/images/groupBackgroundd.jpg'
         : 'assets/images/groupBackgroundl.jpg';
@@ -47,7 +48,9 @@ class BaseScaffold extends StatelessWidget {
               image: AssetImage(backgroundImage),
               fit: BoxFit.cover,
               colorFilter: ColorFilter.mode(
-                Colors.black.withOpacity(0.2),
+                isDarkMode
+                    ? Colors.black.withOpacity(0.2)
+                    : Colors.white.withOpacity(0.2),
                 isDarkMode ? BlendMode.darken : BlendMode.lighten,
               ),
             ),

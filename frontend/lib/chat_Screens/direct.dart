@@ -160,49 +160,76 @@ class _DirectMessageScreenState extends State<DirectMessageScreen> {
     } catch (e) {
       print('Error decoding token: $e');
     }
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.user['name']),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: messages.length,
-              itemBuilder: (context, index) {
-                final message = messages[index];
-                return buildMessageBubble(message);
-              },
-            ),
+    bool isDarkMode =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+            Brightness.dark;
+    String backgroundImage =
+        isDarkMode ? 'assets/images/pdark.jpeg' : 'assets/images/plight.jpg';
+    return Stack(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage(backgroundImage),
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                  isDarkMode
+                      ? Colors.black.withOpacity(0.2)
+                      : Colors.white.withOpacity(0.2),
+                  isDarkMode ? BlendMode.darken : BlendMode.lighten,
+                ),
+                alignment: Alignment.topLeft),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: InputDecoration(
-                      hintText: 'Type a message...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+        ),
+        Scaffold(
+          backgroundColor:
+              Theme.of(context).scaffoldBackgroundColor.withOpacity(0.3),
+          appBar: AppBar(
+            backgroundColor:
+                Theme.of(context).appBarTheme.backgroundColor!.withOpacity(0.8),
+            title: Text(widget.user['name']),
+          ),
+          body: Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    final message = messages[index];
+                    return buildMessageBubble(message);
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _messageController,
+                        decoration: InputDecoration(
+                          hintText: 'Type a message...',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    IconButton(
+                      icon: const Icon(Icons.send),
+                      onPressed: () {
+                        if (_messageController.text.isNotEmpty) {
+                          sendMessage(_messageController.text);
+                        }
+                      },
+                    )
+                  ],
                 ),
-                IconButton(
-                  icon: const Icon(Icons.send),
-                  onPressed: () {
-                    if (_messageController.text.isNotEmpty) {
-                      sendMessage(_messageController.text);
-                    }
-                  },
-                )
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

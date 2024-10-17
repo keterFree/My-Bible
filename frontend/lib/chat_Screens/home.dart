@@ -114,10 +114,11 @@ class _ChatHomeScreenState extends State<ChatHomeScreen>
               children: [
                 Text(
                   ones ? "Groups" : "Members",
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: TextStyle(
+                    color: Theme.of(context).appBarTheme.titleTextStyle!.color,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -161,9 +162,9 @@ class _ChatHomeScreenState extends State<ChatHomeScreen>
               })
             },
             controller: _tabController,
-            labelColor: Theme.of(context).primaryColor,
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: Theme.of(context).primaryColor,
+            labelColor: Theme.of(context).appBarTheme.titleTextStyle!.color,
+            unselectedLabelColor: Theme.of(context).textTheme.bodyMedium!.color,
+            indicatorColor: Theme.of(context).appBarTheme.titleTextStyle!.color,
             tabs: const [
               Tab(text: 'Chats'),
               Tab(text: 'Groups'),

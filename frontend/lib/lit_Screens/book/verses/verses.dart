@@ -252,10 +252,29 @@ class _VersesScreenState extends State<VersesScreen> {
   Widget build(BuildContext context) {
     final token = Provider.of<TokenProvider>(context, listen: false)
         .token; // Get the token from Provider
+    bool isDarkMode =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+            Brightness.dark;
+    String backgroundImage =
+        isDarkMode ? 'assets/images/pdark.jpeg' : 'assets/images/plight.jpg';
     return BaseScaffold(
       title: '${getBookName(widget.bookNo)} $currentChapter',
       body: Stack(
         children: [
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                  image: AssetImage(backgroundImage),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                    isDarkMode
+                        ? Colors.black.withOpacity(0.2)
+                        : Colors.white.withOpacity(0.2),
+                    isDarkMode ? BlendMode.darken : BlendMode.lighten,
+                  ),
+                  alignment: Alignment.topLeft),
+            ),
+          ),
           PageView.builder(
             controller: _pageController,
             onPageChanged: (pageIndex) async {

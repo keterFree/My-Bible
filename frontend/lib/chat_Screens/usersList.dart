@@ -27,7 +27,11 @@ class UsersListScreen extends StatelessWidget {
               // color: Colors.white.withOpacity(0.3),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.2),
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyLarge!
+                      .color!
+                      .withOpacity(0.2),
                   spreadRadius: 1,
                   blurRadius: 4,
                   offset: const Offset(0, 3), // Changes position of shadow
@@ -39,7 +43,7 @@ class UsersListScreen extends StatelessWidget {
                   color: Theme.of(context).colorScheme.secondary),
               title: Text(
                 filteredUsers[index]['name'],
-                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                style: Theme.of(context).appBarTheme.titleTextStyle!.copyWith(
                       fontWeight: FontWeight.bold, // Make the title bold
                       fontSize: 16, // Set font size for title
                     ),

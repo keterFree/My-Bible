@@ -19,7 +19,11 @@ class GroupsListScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(7),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.2),
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyLarge!
+                      .color!
+                      .withOpacity(0.2),
                   spreadRadius: 1,
                   blurRadius: 4,
                   offset: const Offset(0, 3), // Changes position of shadow
@@ -30,7 +34,7 @@ class GroupsListScreen extends StatelessWidget {
               leading: Icon(Icons.group,
                   color: Theme.of(context).colorScheme.secondary),
               title: Text(groups[index]['name'],
-                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                  style: Theme.of(context).appBarTheme.titleTextStyle!.copyWith(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       )),

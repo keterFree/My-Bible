@@ -77,9 +77,7 @@ flutter:
     # - images/a_dot_ham.jpeg
     - assets/sql/eng_bible.sql
     - assets/sql/bibledb.db
-    - assets/images/icon.png
-    - assets/images/groupBackgroundd.jpg
-    - assets/images/groupBackgroundl.jpg
+    - assets/images/
     - assets/images/error.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
