@@ -28,6 +28,7 @@ app.use('/api/highlights', require('./routes/highlights'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/groups', require('./routes/groups'));
 app.use('/api/direct', require('./routes/directMessages'));
+app.use('/api/events', require('./routes/events'));
 
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));

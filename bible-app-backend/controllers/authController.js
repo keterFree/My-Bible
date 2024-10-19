@@ -17,57 +17,69 @@ function haltOnTimedOut(req, res, next) {
 
 // Register a new user
 exports.register = [
-    timeout('20s'), // Set a 20-second timeout
+    timeout('20s'),
     async (req, res, next) => {
         const { name, phone, password } = req.body;
+
+        // Check if all fields are provided
+        if (!name || !phone || !password) {
+            return res.json({ msg: 'Please provide name, phone, and password', status: "400" });
+        }
+
         try {
-            let user = await User.findOne({ phone });
+            const user = await User.findOne({ phone });
             if (user) {
-                return res.status(400).json({ msg: 'User already exists' });
+                return res.json({ msg: 'User with this phone number already exists', status: "400" });
             }
-            user = new User({ name, phone, password });
+
             const salt = await bcrypt.genSalt(10);
-            user.password = await bcrypt.hash(password, salt);
-            await user.save();
-            const payload = { user: { id: user.id } };
+            const hashedPassword = await bcrypt.hash(password, salt);
+
+            const newUser = new User({ name, phone, password: hashedPassword });
+            await newUser.save();
+
+            const payload = { user: { id: newUser.id } };
             jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' }, (err, token) => {
                 if (err) throw err;
                 res.json({ token });
             });
         } catch (err) {
-            console.error(err.message);
-            res.status(500).send('Server Error');
+            console.error('Registration error:', err.message);
+            res.status(500).json({ msg: 'Server error during registration' });
         }
     },
     haltOnTimedOut
 ];
+
 
 // Login user
 exports.login = [
     timeout('20s'),
     async (req, res, next) => {
         const { phone, password } = req.body;
+
+        if (!phone || !password) {
+            return res.status(400).json({ msg: 'Please provide both phone and password' });
+        }
+
         try {
             const user = await User.findOne({ phone });
             if (!user) {
                 return res.status(400).json({ msg: 'Invalid credentials' });
             }
+
             const isMatch = await bcrypt.compare(password, user.password);
             if (!isMatch) {
                 return res.status(400).json({ msg: 'Invalid credentials' });
             }
-            const payload = { user: { id: user.id, name: user.name, phone: user.phone, tier:user.tier} };
-            jwt.sign(
-                payload,
-                process.env.JWT_SECRET,
-                { expiresIn: '365d' }, // Token valid for 365 days
-                (err, token) => {
-                    if (err) throw err;
-                    res.json({ token }); // Return the token
-                }
-            );
+
+            const payload = { user: { id: user.id, name: user.name, phone: user.phone, tier: user.tier } };
+            jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '365d' }, (err, token) => {
+                if (err) throw err;
+                res.json({ token });
+            });
         } catch (err) {
-            console.error(err.message);
+            console.error('Login error:', err.message);
             res.status(500).send('Server Error');
         }
     },
@@ -189,31 +201,32 @@ exports.verifyResetCodeAndResetPassword = [
     async (req, res, next) => {
         const { phone, resetCode, newPassword } = req.body;
 
+        if (!phone || !resetCode || !newPassword) {
+            return res.status(400).json({ msg: 'Please provide phone, reset code, and new password' });
+        }
+
         try {
-            let user = await User.findOne({ phone });
+            const user = await User.findOne({ phone });
 
             if (!user || !user.resetCodeExpires || user.resetCodeExpires < Date.now()) {
                 return res.status(400).json({ msg: 'Invalid or expired reset code' });
             }
 
-            // Check if the reset code matches
             const isMatch = await bcrypt.compare(resetCode, user.resetCode);
             if (!isMatch) {
                 return res.status(400).json({ msg: 'Invalid reset code' });
             }
 
-            // Hash new password and update user
             const salt = await bcrypt.genSalt(10);
             user.password = await bcrypt.hash(newPassword, salt);
 
-            // Clear the reset code fields
             user.resetCode = undefined;
             user.resetCodeExpires = undefined;
             await user.save();
 
             res.json({ msg: 'Password reset successful' });
         } catch (err) {
-            console.error(err.message);
+            console.error('Reset code error:', err.message);
             res.status(500).send('Server Error');
         }
     },
