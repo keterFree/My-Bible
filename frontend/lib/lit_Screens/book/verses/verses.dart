@@ -99,10 +99,15 @@ class _VersesScreenState extends State<VersesScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Add a Note'),
+          title: Text(
+            'Add a Note',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
           content: TextField(
             controller: noteController,
-            decoration: const InputDecoration(hintText: "Enter your note here"),
+            decoration: InputDecoration(
+                hintText: "Enter your note here",
+                hintStyle: Theme.of(context).textTheme.bodyMedium),
           ),
           actions: <Widget>[
             ElevatedButton(
@@ -111,8 +116,12 @@ class _VersesScreenState extends State<VersesScreen> {
                 _bookmarkSelectedVerses(token, noteController.text,
                     context); // Call the bookmark method with the note
               },
-              child: Text('Save Bookmark',
-                  style: Theme.of(context).textTheme.bodySmall),
+              child: Text(
+                'Save Bookmark',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+              ),
             ),
             TextButton(
               onPressed: () {
@@ -255,25 +264,15 @@ class _VersesScreenState extends State<VersesScreen> {
     bool isDarkMode =
         WidgetsBinding.instance.platformDispatcher.platformBrightness ==
             Brightness.dark;
-    String backgroundImage =
-        isDarkMode ? 'assets/images/pdark.jpeg' : 'assets/images/plight.jpg';
+    Color background = isDarkMode
+        ? Colors.black.withOpacity(0.8)
+        : Colors.black.withOpacity(0.6);
     return BaseScaffold(
       title: '${getBookName(widget.bookNo)} $currentChapter',
       body: Stack(
         children: [
           Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                  image: AssetImage(backgroundImage),
-                  fit: BoxFit.cover,
-                  colorFilter: ColorFilter.mode(
-                    isDarkMode
-                        ? Colors.black.withOpacity(0.2)
-                        : Colors.white.withOpacity(0.2),
-                    isDarkMode ? BlendMode.darken : BlendMode.lighten,
-                  ),
-                  alignment: Alignment.topLeft),
-            ),
+            decoration: BoxDecoration(color: background),
           ),
           PageView.builder(
             controller: _pageController,
@@ -312,8 +311,8 @@ class _VersesScreenState extends State<VersesScreen> {
                           leading: Text('$verseNumber'),
                           title: Text(text),
                           selected: isSelected,
-                          selectedTileColor:
-                              const Color.fromARGB(88, 255, 240, 107),
+                          selectedTileColor: Colors.amber[600],
+                          // const Color.fromARGB(88, 255, 240, 107),
                           onTap: () => _toggleVerseSelection(verseNumber),
                         );
                       },

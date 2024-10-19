@@ -51,7 +51,7 @@ class BaseScaffold extends StatelessWidget {
                 isDarkMode
                     ? Colors.black.withOpacity(0.2)
                     : Colors.white.withOpacity(0.2),
-                isDarkMode ? BlendMode.darken : BlendMode.lighten,
+                BlendMode.darken,
               ),
             ),
           ),
@@ -105,6 +105,8 @@ class BaseScaffold extends StatelessWidget {
                 _buildNavIcon(context, Icons.star, 'Highlights', '/highlights'),
                 _buildNavIcon(
                     context, Icons.bookmark, 'Bookmarks', '/bookmarks'),
+                _buildNavIcon(
+                    context, Icons.event_rounded, 'My Events', '/homeEvents'),
                 _buildNavIcon(
                     context, Icons.account_circle, 'My Account', '/account'),
               ],

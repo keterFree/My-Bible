@@ -67,8 +67,9 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } catch (e) {
       setState(() {
-        verseReference = 'Error';
-        verseContent = 'Failed to load verse.';
+        verseReference = 'Isaiah 60:1';
+        verseContent =
+            'Arise,shine,for your light has come, and the glory of the lord rises upon you.';
         isLoading = false;
       });
     }

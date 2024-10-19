@@ -136,21 +136,80 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                       String note = _groupedBookmarks.keys.elementAt(index);
                       List<dynamic> bookmarks = _groupedBookmarks[note]!;
 
+                      // return ExpansionTile(
+                      //   iconColor: Theme.of(context).iconTheme.color,
+                      //   title: Text(
+                      //     note.isNotEmpty ? note : 'No Note',
+                      //     style: Theme.of(context).textTheme.bodyLarge,
+                      //   ),
+                      //   children: bookmarks.map((bookmark) {
+                      //     return ListTile(
+                      //       title: Text(
+                      //         '${getBookName(bookmark['book'])} ${bookmark['chapter']}:${bookmark['verse']}',
+                      //         style: Theme.of(context).textTheme.bodyMedium,
+                      //       ),
+                      //       subtitle: Text(
+                      //         '${bookmark['text']}',
+                      //         style: Theme.of(context).textTheme.bodyMedium,
+                      //       ),
+                      //     );
+                      //   }).toList(),
+                      // );
+
                       return ExpansionTile(
-                        iconColor: Theme.of(context).iconTheme.color,
-                        title: Text(
-                          note.isNotEmpty ? note : 'No Note',
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
+                        iconColor: Theme.of(context)
+                            .primaryColor, // Customize the icon color
+                        backgroundColor: Theme.of(context)
+                            .colorScheme
+                            .secondary
+                            .withOpacity(
+                                0.6), // Add a light background color for the expanded tile
+                        collapsedBackgroundColor: Theme.of(context)
+                            .colorScheme
+                            .secondary
+                            .withOpacity(
+                                0.3), // Background color when tile is collapsed
+                        collapsedIconColor: Theme.of(context)
+                            .appBarTheme
+                            .titleTextStyle!
+                            .color!
+                            .withOpacity(0.9),
+                        tilePadding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 8.0), // Add padding around the tile
+                        leading: const Icon(Icons.library_books),
+                        title: Text(note.isNotEmpty ? note : 'No Note',
+                            style: Theme.of(context).textTheme.bodyLarge),
                         children: bookmarks.map((bookmark) {
                           return ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal:
+                                    16.0), // Adjust padding for list items
                             title: Text(
                               '${getBookName(bookmark['book'])} ${bookmark['chapter']}:${bookmark['verse']}',
-                              style: Theme.of(context).textTheme.bodyMedium,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight
+                                        .bold, // Make the book name and verse bold
+                                  ),
                             ),
                             subtitle: Text(
-                              '${bookmark['text']}',
-                              style: Theme.of(context).textTheme.bodyMedium,
+                              bookmark['text'],
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    fontStyle: FontStyle
+                                        .italic, // Italicize the verse text for better readability
+                                  ),
+                            ),
+                            leading: Icon(
+                              Icons
+                                  .bookmark, // Add a bookmark icon to each list item
+                              color: Theme.of(context)
+                                  .primaryColor, // Match the icon color to the theme
                             ),
                           );
                         }).toList(),

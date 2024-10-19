@@ -22,56 +22,69 @@ class _BooksScreenState extends State<BooksScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isDarkMode =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+            Brightness.dark;
+    Color background = isDarkMode
+        ? Colors.black.withOpacity(0.8)
+        : Colors.black.withOpacity(0.6);
     return BaseScaffold(
       title: 'Books',
-      body: Padding(
-        padding: const EdgeInsets.all(16.0), // Add padding for better UI
-        child: FutureBuilder<List<int>>(
-          future: booksFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('No books found.'));
-            } else {
-              final books = snapshot.data!;
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(color: background),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0), // Add padding for better UI
+            child: FutureBuilder<List<int>>(
+              future: booksFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('No books found.'));
+                } else {
+                  final books = snapshot.data!;
 
-              // Ensure list is scrollable by using SingleChildScrollView
-              return SingleChildScrollView(
-                child: ListView.builder(
-                  shrinkWrap:
-                      true, // Allow the ListView to shrink based on content
-                  physics:
-                      const NeverScrollableScrollPhysics(), // Disable internal scroll, managed by SingleChildScrollView
-                  itemCount: books.length,
-                  itemBuilder: (context, index) {
-                    final bookNumber = books[index];
-                    final bookName =
-                        getBookName(bookNumber); // A helper function
+                  // Ensure list is scrollable by using SingleChildScrollView
+                  return SingleChildScrollView(
+                    child: ListView.builder(
+                      shrinkWrap:
+                          true, // Allow the ListView to shrink based on content
+                      physics:
+                          const NeverScrollableScrollPhysics(), // Disable internal scroll, managed by SingleChildScrollView
+                      itemCount: books.length,
+                      itemBuilder: (context, index) {
+                        final bookNumber = books[index];
+                        final bookName =
+                            getBookName(bookNumber); // A helper function
 
-                    return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 8.0, horizontal: 16.0),
-                      title: Text(bookName,
-                          style: Theme.of(context).textTheme.bodyLarge),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                ChaptersScreen(bookNumber: bookNumber),
-                          ),
+                        return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 16.0),
+                          title: Text(bookName,
+                              style: Theme.of(context).textTheme.bodyLarge),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ChaptersScreen(bookNumber: bookNumber),
+                              ),
+                            );
+                          },
                         );
                       },
-                    );
-                  },
-                ),
-              );
-            }
-          },
-        ),
+                    ),
+                  );
+                }
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

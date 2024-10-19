@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:frontend/chat_Screens/home.dart';
+import 'package:frontend/events/eventsList.dart';
 import 'package:frontend/providers/token_provider.dart';
 import 'package:frontend/lit_Screens/account.dart';
 import 'package:frontend/auth/splash.dart';
@@ -48,6 +49,7 @@ class MyApp extends StatelessWidget {
         '/account': (context) => const AccountScreen(),
         '/error': (context) => const ErrorScreen(),
         '/homeChat': (context) => const ChatHomeScreen(),
+        '/homeEvents': (context) => const EventListScreen(),
       },
       onGenerateRoute: (settings) {
         return MaterialPageRoute(
@@ -78,22 +80,25 @@ class MyApp extends StatelessWidget {
       ),
       textTheme: const TextTheme(
         bodySmall: TextStyle(
-            color: Color(0xFF0D0D0D),
+            // color: Color(0xFF0D0D0D),
+            color: Colors.black,
             fontSize: 15,
             fontWeight: FontWeight.bold),
         headlineLarge: TextStyle(color: Color(0xFF731212)), // #731212
         bodyLarge: TextStyle(
-            color: Color(0xFF0D0D0D),
+            // color: Color(0xFF0D0D0D),
+            color: Colors.white,
             fontSize: 18,
             fontWeight: FontWeight.bold), // #0D0D0D
         bodyMedium: TextStyle(
-            color: Color(0xFF0D0D0D),
+            // color: Color(0xFF0D0D0D),
+            color: Colors.white,
             fontSize: 18,
             fontWeight: FontWeight.bold),
       ),
       buttonTheme: const ButtonThemeData(
         buttonColor: Color(0xFFA61C41), // #A61C41
-        textTheme: ButtonTextTheme.primary,
+        textTheme: ButtonTextTheme.normal,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Color.fromARGB(158, 218, 119, 145), // #A61C41
@@ -131,9 +136,13 @@ class MyApp extends StatelessWidget {
             fontSize: 18,
             fontWeight: FontWeight.bold),
       ),
-      buttonTheme: const ButtonThemeData(
+      buttonTheme: ButtonThemeData(
         buttonColor: Color(0xFF010D00), // #010D00
         textTheme: ButtonTextTheme.primary,
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+        ),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Color(0xFF010D00), // #010D00
