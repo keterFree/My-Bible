@@ -240,13 +240,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         controller: _nameController,
                         decoration: InputDecoration(
                           labelText: 'your name here',
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium!
-                                    .color!),
-                          ),
+                          labelStyle: Theme.of(context).textTheme.bodyMedium,
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -257,8 +251,12 @@ class _AccountScreenState extends State<AccountScreen> {
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        child: Text('Save',
-                            style: Theme.of(context).textTheme.bodySmall),
+                        child: Text(
+                          'Save',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
                         onPressed: () => _updateUserDetails(_nameFormKey),
                       ),
                     ],
@@ -300,13 +298,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         controller: _phoneController,
                         decoration: InputDecoration(
                           labelText: '07xx xxx xxx',
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium!
-                                    .color!),
-                          ),
+                          labelStyle: Theme.of(context).textTheme.bodyMedium,
                         ),
                         keyboardType: TextInputType.phone,
                         inputFormatters: [
@@ -328,8 +320,12 @@ class _AccountScreenState extends State<AccountScreen> {
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        child: Text('Save',
-                            style: Theme.of(context).textTheme.bodySmall),
+                        child: Text(
+                          'Save',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
                         onPressed: () => _updateUserDetails(_phoneFormKey),
                       ),
                     ],
@@ -371,13 +367,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         controller: _oldPasswordController,
                         decoration: InputDecoration(
                           labelText: 'Old Password',
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium!
-                                    .color!),
-                          ),
+                          labelStyle: Theme.of(context).textTheme.bodyMedium,
                         ),
                         obscureText: true,
                         validator: (value) {
@@ -394,13 +384,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         controller: _newPasswordController,
                         decoration: InputDecoration(
                           labelText: 'New Password',
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium!
-                                    .color!),
-                          ),
+                          labelStyle: Theme.of(context).textTheme.bodyMedium,
                         ),
                         obscureText: true,
                         validator: (value) {
@@ -416,13 +400,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         controller: _confirmPasswordController,
                         decoration: InputDecoration(
                           labelText: 'Confirm New Password',
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium!
-                                    .color!),
-                          ),
+                          labelStyle: Theme.of(context).textTheme.bodyMedium,
                         ),
                         obscureText: true,
                         validator: (value) {
@@ -434,8 +412,12 @@ class _AccountScreenState extends State<AccountScreen> {
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        child: Text('Save',
-                            style: Theme.of(context).textTheme.bodySmall),
+                        child: Text(
+                          'Save',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
                         onPressed: () => _updateUserDetails(_passwordFormKey),
                       ),
                     ],

@@ -50,7 +50,7 @@ class UsersListScreen extends StatelessWidget {
               ),
               subtitle: Text(
                 filteredUsers[index]['phone'],
-                style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                       fontSize: 12,
                     ),
               ),

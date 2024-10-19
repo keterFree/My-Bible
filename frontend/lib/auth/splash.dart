@@ -82,7 +82,8 @@ class _SplashScreenState extends State<SplashScreen>
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
 
-    Widget nextScreen = (token != null) ? const HomeScreen() : const LoginScreen();
+    Widget nextScreen =
+        (token != null) ? const HomeScreen() : const LoginScreen();
 
     // Update the token provider if the token exists
     if (token != null) {
@@ -119,6 +120,11 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    bool isDarkMode =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+            Brightness.dark;
+    String iconImage =
+        isDarkMode ? 'assets/images/iconnn.png' : 'assets/images/icon.png';
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Center(
@@ -138,10 +144,14 @@ class _SplashScreenState extends State<SplashScreen>
                       mainAxisAlignment:
                           MainAxisAlignment.center, // Center the content
                       children: [
-                        Image.asset(
-                          'assets/images/icon.png', // Ensure this image path is correct
-                          width: 100, // Width of the image
-                          height: 100, // Height of the image
+                        CircleAvatar(
+                          radius: MediaQuery.of(context).size.width /
+                              5, // Adjust radius to be a quarter of screen width
+                          backgroundColor: Colors.transparent,
+                          child: Image.asset(
+                            iconImage,
+                            fit: BoxFit.contain, // Ensure the icon fits well
+                          ),
                         ),
                         const SizedBox(
                             height: 16), // Space between image and text
@@ -196,24 +206,24 @@ class _SplashScreenState extends State<SplashScreen>
               child: Text(
                 _statusMessage,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontSize: 16,
                       color: _hasError
                           ? Colors.red
-                          : Theme.of(context).textTheme.bodyLarge!.color,
+                          : Theme.of(context).textTheme.bodySmall!.color,
                     ),
               ),
             ),
             Text(
               "created by keter titus",
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontSize: 10,
                     fontFamily: 'RaleWay',
                     fontStyle: FontStyle.italic,
                     color: _hasError
                         ? Colors.red
-                        : Theme.of(context).textTheme.bodyLarge!.color,
+                        : Theme.of(context).textTheme.bodySmall!.color,
                   ),
             ),
           ],

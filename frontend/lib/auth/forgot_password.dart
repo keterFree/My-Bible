@@ -14,6 +14,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailOrPhoneController = TextEditingController();
   bool _isLoading = false;
+  bool _isValidInput = false; // Track if input is valid
 
   Future<void> _sendResetCode() async {
     if (_formKey.currentState!.validate()) {
@@ -23,35 +24,27 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
       String emailOrPhone = _emailOrPhoneController.text.trim();
 
-      // Check if it's a phone number (adjust regex to your phone number format)
+      // Format phone number: Add +254 and remove leading 0 if present
       if (RegExp(r'^0[0-9]{9}$').hasMatch(emailOrPhone)) {
-        // If phone number starts with 0 and is 10 digits, remove the leading zero
-        if (emailOrPhone.startsWith('0') && emailOrPhone.length == 10) {
-          emailOrPhone = emailOrPhone.substring(1); // Remove the leading 0
-        }
-        // Prepend +254 for Kenya
-        emailOrPhone = '+254$emailOrPhone';
+        emailOrPhone = '+254${emailOrPhone.substring(1)}';
       }
 
       var url = Uri.parse(ApiConstants.passwordResetSendEndpoint);
       var response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          "phone": emailOrPhone, // Send the processed email/phone number
-        }),
+        body: jsonEncode({"phone": emailOrPhone}),
       );
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Reset code sent! Check your email or SMS.')),
+          const SnackBar(content: Text('Reset code sent! Check SMS or email.')),
         );
         Navigator.pop(context); // Return to the login screen
       } else {
-        print(response.body);
+        final errorMsg = jsonDecode(response.body)['msg'] ?? 'Unknown error';
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to send reset code!')),
+          SnackBar(content: Text('Failed to send reset code: $errorMsg')),
         );
       }
 
@@ -64,39 +57,81 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Forgot Password'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextFormField(
-                style: Theme.of(context).textTheme.bodyMedium,
-                controller: _emailOrPhoneController,
-                decoration: const InputDecoration(
-                  labelText: 'Phone Number',
-                  helperText: '+254 will be added automatically',
+      appBar: AppBar(title: const Text('Forgot Password')),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 40),
+                Text(
+                  'Reset Password',
+                  style: Theme.of(context).textTheme.bodySmall,
+                  textAlign: TextAlign.center,
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your phone number';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-              _isLoading
-                  ? const CircularProgressIndicator()
-                  : ElevatedButton(
-                      onPressed: _sendResetCode,
-                      child: Text('Send Reset Code',
-                          style: Theme.of(context).textTheme.bodySmall),
+                const SizedBox(height: 10),
+                Text(
+                  'Enter your phone number to receive a reset code via SMS.',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 30),
+                TextFormField(
+                  controller: _emailOrPhoneController,
+                  keyboardType: TextInputType.phone,
+                  style: Theme.of(context).textTheme.bodySmall,
+                  decoration: InputDecoration(
+                    labelText: 'Phone Number',
+                    helperText: '+254 will be added automatically',
+                    prefixIcon: const Icon(Icons.phone),
+                    suffixIcon: _isValidInput
+                        ? const Icon(Icons.check, color: Colors.green)
+                        : null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
                     ),
-            ],
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your phone number';
+                    } else if (!RegExp(r'^0[0-9]{9}$').hasMatch(value)) {
+                      return 'Enter a valid 10-digit phone number';
+                    }
+                    return null;
+                  },
+                  onChanged: (value) {
+                    setState(() {
+                      _isValidInput = RegExp(r'^0[0-9]{9}$').hasMatch(value);
+                    });
+                  },
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _sendResetCode,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                  ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        )
+                      : const Text('Send Reset Code'),
+                ),
+                const SizedBox(height: 20),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Back to Login'),
+                ),
+              ],
+            ),
           ),
         ),
       ),

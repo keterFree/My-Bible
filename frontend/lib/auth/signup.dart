@@ -21,9 +21,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Dio dio = Dio(); // Create a Dio instance
 
+  // Dispose controllers to avoid memory leaks
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  // Validate Kenyan phone numbers and allow spaces or hyphens
   bool isPhoneNumber(String input) {
-    final phoneRegex =
-        RegExp(r'^[0-9]{9}$'); // Adjust to match your phone format
+    final phoneRegex = RegExp(r'^[0-9\s\-]{9,10}$');
     return phoneRegex.hasMatch(input);
   }
 
@@ -42,16 +52,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
       try {
         String phoneNumber = _phoneController.text.trim();
+        phoneNumber =
+            phoneNumber.replaceAll(RegExp(r'\s+|-'), ''); // Clean input
 
-        // If the phone number starts with 0, remove the leading zero
-        if (phoneNumber.startsWith('0') && phoneNumber.length == 10) {
-          phoneNumber = phoneNumber
-              .substring(1); // Remove the first character (the leading 0)
+        // Remove leading zero if present and prepend +254
+        if (phoneNumber.startsWith('0')) {
+          phoneNumber = phoneNumber.substring(1);
         }
-
-        // Prepend +254 to the cleaned phone number
         String fullPhoneNumber = '+254$phoneNumber';
-
+        print(
+            " ${ApiConstants.registerEndpoint} \n name: ${_nameController.text},\n phone: $fullPhoneNumber,\npassword: ${_passwordController.text},\n");
         var response = await dio.post(
           ApiConstants.registerEndpoint,
           data: {
@@ -66,33 +76,42 @@ class _SignUpScreenState extends State<SignUpScreen> {
         );
 
         if (response.statusCode == 200) {
-          // Registration successful, navigate to the login screen
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const LoginScreen()),
-          );
+          bool error = response.data["status"] == "400";
+          if (error) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(response.data["msg"])),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Registration Successful!')),
+            );
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+            );
+          }
         } else {
-          String errorMsg =
-              response.data["msg"] ?? "Registration failed. Please try again.";
+          String errorMsg = response.data["msg"] ?? "Registration failed.";
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(errorMsg)),
           );
+          print("else error : $errorMsg");
         }
       } on DioException catch (e) {
-        // Handle Dio errors
+        String errorMessage = 'An error occurred. Please try again.';
+        if (e.type == DioExceptionType.connectionTimeout) {
+          errorMessage = 'Connection timeout. Please try again later.';
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  'Connection error. Please try again later. ${e.message}')),
+          SnackBar(content: Text(errorMessage)),
         );
-        debugPrint('DioException: ${e.message}');
+        // print(e.message);
+        print("Dio error : ${e.message}");
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  'An unexpected error occurred. Please try again later. $e')),
+          SnackBar(content: Text('Unexpected error: $e')),
         );
-        debugPrint('Unexpected error: $e');
+        print(e);
       } finally {
         setState(() {
           _isLoading = false;
@@ -103,92 +122,129 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isDarkMode =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+            Brightness.dark;
+    String iconImage =
+        isDarkMode ? 'assets/images/iconnn.png' : 'assets/images/icon.png';
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sign Up'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextFormField(
-                style: Theme.of(context).textTheme.bodyMedium,
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your name';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                style: Theme.of(context).textTheme.bodyMedium,
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Phone Number',
-                  prefixText: '+254 ', // Display +254 prefix in the UI
-                  hintText: '7XXXXXXXX',
+      appBar: AppBar(title: const Text('Sign Up')),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: MediaQuery.of(context).size.width / 5,
+                  backgroundColor: Colors.transparent,
+                  child: Image.asset(iconImage, fit: BoxFit.contain),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty || !isPhoneNumber(value)) {
-                    return 'Please enter a valid phone number';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                style: Theme.of(context).textTheme.bodyMedium,
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Password'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a password';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                style: Theme.of(context).textTheme.bodyMedium,
-                controller: _confirmPasswordController,
-                obscureText: true,
-                decoration:
-                    const InputDecoration(labelText: 'Confirm Password'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please confirm your password';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-              _isLoading
-                  ? const CircularProgressIndicator()
-                  : ElevatedButton(
-                      onPressed: _register,
-                      child: Text('Sign Up',
-                          style: Theme.of(context).textTheme.bodySmall),
+                const SizedBox(height: 20),
+                TextFormField(
+                  style: Theme.of(context).textTheme.bodySmall,
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: 'Name',
+                    labelStyle: Theme.of(context).textTheme.bodySmall,
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) =>
+                      value == null || value.isEmpty ? 'Enter your name' : null,
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  style: Theme.of(context).textTheme.bodySmall,
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                    labelText: 'Phone Number',
+                    labelStyle: Theme.of(context).textTheme.bodySmall,
+                    prefixText: '+254 ',
+                    hintText: '7XXXXXXXX',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null ||
+                        value.isEmpty ||
+                        !isPhoneNumber(value)) {
+                      return 'Enter a valid phone number';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  style: Theme.of(context).textTheme.bodySmall,
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    labelStyle: Theme.of(context).textTheme.bodySmall,
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Enter a password'
+                      : null,
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  style: Theme.of(context).textTheme.bodySmall,
+                  controller: _confirmPasswordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Confirm Password',
+                    labelStyle: Theme.of(context).textTheme.bodySmall,
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Confirm your password'
+                      : null,
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    elevatedB(
+                      "Login",
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const LoginScreen()),
+                        );
+                      },
                     ),
-              const SizedBox(height: 20),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const LoginScreen()),
-                  );
-                },
-                child: const Text("Already have an account? Login"),
-              ),
-            ],
+                    const SizedBox(width: 20),
+                    _isLoading
+                        ? const CircularProgressIndicator()
+                        : elevatedB('Sign Up', _register),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  ElevatedButton elevatedB(String label, VoidCallback method) {
+    return ElevatedButton(
+      onPressed: _isLoading ? null : method,
+      style: ElevatedButton.styleFrom(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        // Add any default style properties here
+        padding: const EdgeInsets.all(16.0), // example padding
+      ),
+      child: _isLoading
+          ? const CircularProgressIndicator(color: Colors.white)
+          : Text(label),
     );
   }
 }

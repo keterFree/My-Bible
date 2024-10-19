@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:dio/dio.dart'; // Import the Dio package
+import 'package:dio/dio.dart';
 import 'package:frontend/lit_Screens/home.dart';
 import 'package:frontend/auth/signup.dart';
-import 'package:frontend/constants.dart'; // Ensure you have the correct path for ApiConstants
+import 'package:frontend/constants.dart';
 import 'package:frontend/providers/token_provider.dart';
 import 'package:frontend/auth/forgot_password.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,22 +21,18 @@ class _LoginScreenState extends State<LoginScreen> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
-
-  // Initialize Dio instance
   final Dio _dio = Dio();
 
   @override
   void initState() {
     super.initState();
-    _checkLoggedInStatus(); // Check if token exists
+    _checkLoggedInStatus();
   }
 
-  // Check if a token is already stored in SharedPreferences
   Future<void> _checkLoggedInStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
     if (token != null) {
-      // If token exists, set it in the TokenProvider and navigate to HomeScreen
       Provider.of<TokenProvider>(context, listen: false).setToken(token);
       Navigator.pushReplacement(
         context,
@@ -47,177 +43,169 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
-
+      setState(() => _isLoading = true);
       try {
-        var phoneNo = _phoneController.text;
-
-        // Validate and format the phone number
+        String phoneNo = _phoneController.text.trim();
         if (RegExp(r'^0[0-9]{9}$').hasMatch(phoneNo)) {
-          // If phone number starts with 0 and is 10 digits, remove the leading zero
-          if (phoneNo.startsWith('0') && phoneNo.length == 10) {
-            phoneNo = phoneNo.substring(1); // Remove the leading 0
-          }
-          // Prepend +254 for Kenya
-          phoneNo = '+254$phoneNo';
+          phoneNo = '+254${phoneNo.substring(1)}';
         }
 
-        // Make the Dio POST request
         Response response = await _dio.post(
           ApiConstants.loginEndpoint,
-          data: {
-            "phone": phoneNo,
-            "password": _passwordController.text,
-          },
+          data: {"phone": phoneNo, "password": _passwordController.text},
           options: Options(
             headers: {'Content-Type': 'application/json'},
-            sendTimeout: const Duration(seconds: 10), // Request timeout
+            sendTimeout: const Duration(seconds: 10),
           ),
         );
 
         if (response.statusCode == 200) {
-          var responseData = response.data;
-          var token = responseData['token'];
-
-          // Save the token in SharedPreferences for persistent login
+          var token = response.data['token'];
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('auth_token', token);
-
-          // Save the token in TokenProvider
           Provider.of<TokenProvider>(context, listen: false).setToken(token);
 
-          // Navigate to Home Screen
+          _phoneController.clear();
+          _passwordController.clear();
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const HomeScreen()),
           );
         } else {
-          // Handle non-200 status codes and show the error message from the server
-          String errorMsg =
-              response.data["msg"] ?? "Login failed. Please try again.";
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(errorMsg)),
-          );
+          _showError(response.data["msg"] ?? "Login failed. Please try again.");
         }
       } on DioException catch (e) {
-        // Handle Dio errors like request timeout, server error, etc.
-        String errorMessage = '';
-        if (e.type == DioExceptionType.connectionTimeout) {
-          errorMessage = 'Connection timed out. Please try again later.';
-        } else if (e.type == DioExceptionType.receiveTimeout) {
-          errorMessage = 'Response timed out. Please try again later.';
-        } else if (e.response != null) {
-          // Non-200 status code errors
-          errorMessage =
-              e.response?.data["msg"] ?? 'Login failed. Please try again.';
-        } else {
-          errorMessage =
-              'An unexpected error occurred. Please try again later.';
-        }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage)),
-        );
-        debugPrint('DioError: $e');
+        _handleDioError(e);
       } catch (e) {
-        // Handle any other unforeseen errors
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  'An unexpected error occurred. Please try again later. $e')),
-        );
-        debugPrint('Unexpected error: $e');
+        _showError('An unexpected error occurred. Please try again. $e');
       } finally {
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
       }
     }
   }
 
+  void _handleDioError(DioException e) {
+    String errorMessage = '';
+    if (e.type == DioExceptionType.connectionTimeout) {
+      errorMessage = 'Connection timed out. Please try again later.';
+    } else if (e.type == DioExceptionType.receiveTimeout) {
+      errorMessage = 'Response timed out. Please try again later.';
+    } else if (e.response != null) {
+      errorMessage = e.response?.data["msg"] ?? 'Login failed.';
+    } else {
+      errorMessage = 'An unexpected error occurred.';
+    }
+    _showError(errorMessage);
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
   @override
   Widget build(BuildContext context) {
+    bool isDarkMode =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+            Brightness.dark;
+    String iconImage =
+        isDarkMode ? 'assets/images/iconnn.png' : 'assets/images/icon.png';
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextFormField(
-                style: Theme.of(context).textTheme.bodyMedium,
-                controller: _phoneController,
-                decoration: InputDecoration(
-                  labelText: 'Phone',
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                        color: Theme.of(context).textTheme.bodyMedium!.color!),
+      appBar: AppBar(title: const Text('Login')),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                // crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  CircleAvatar(
+                    radius: MediaQuery.of(context).size.width / 5,
+                    backgroundColor: Colors.transparent,
+                    child: Image.asset(iconImage, fit: BoxFit.contain),
                   ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your phone number';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 10),
-              TextFormField(
-                style: Theme.of(context).textTheme.bodyMedium,
-                controller: _passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                        color: Theme.of(context).textTheme.bodyMedium!.color!),
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-              _isLoading
-                  ? const CircularProgressIndicator()
-                  : ElevatedButton(
-                      onPressed: _login,
-                      child: Text('Login',
-                          style: Theme.of(context).textTheme.bodySmall),
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    autofocus: true,
+                    style: Theme.of(context).textTheme.bodySmall,
+                    controller: _phoneController,
+                    decoration: InputDecoration(
+                      labelText: 'Phone',
+                      labelStyle: Theme.of(context).textTheme.bodySmall,
                     ),
-              const SizedBox(height: 20),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const SignUpScreen()),
-                  );
-                },
-                child: const Text("Don't have an account? Register here"),
+                    validator: (value) => value == null || value.isEmpty
+                        ? 'Enter phone number'
+                        : null,
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    style: Theme.of(context).textTheme.bodySmall,
+                    controller: _passwordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      labelStyle: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    validator: (value) => value == null || value.isEmpty
+                        ? 'Enter password'
+                        : null,
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      elevatedB("Login", _login),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      elevatedB(
+                          "Forgot Password?",
+                          () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const ForgotPasswordScreen()),
+                              )),
+                      const SizedBox(width: 20),
+                      elevatedB(
+                          "Register",
+                          () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const SignUpScreen()),
+                              )),
+                    ],
+                  ),
+                ],
               ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const ForgotPasswordScreen()),
-                  );
-                },
-                child: const Text("Forgot Password?"),
-              ),
-            ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  ElevatedButton elevatedB(String label, VoidCallback method) {
+    return ElevatedButton(
+      onPressed: _isLoading ? null : method,
+      style: ElevatedButton.styleFrom(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        // Add any default style properties here
+        padding: const EdgeInsets.all(16.0), // example padding
+      ),
+      child: _isLoading
+          ? const CircularProgressIndicator(color: Colors.white)
+          : Text(label),
     );
   }
 }
