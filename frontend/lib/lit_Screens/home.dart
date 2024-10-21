@@ -4,7 +4,7 @@ import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
 import 'package:frontend/providers/token_provider.dart';
-import 'package:frontend/lit_Screens/baseScaffold.dart';
+import 'package:frontend/lit_Screens/base_scaffold.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -21,8 +21,9 @@ class _HomeScreenState extends State<HomeScreen> {
   String verseContent = '';
   String verseTopic = '';
   String verseSermon = '';
-  Uri? commentaryUrl; // Nullable Uri
+  Uri? commentaryUrl;
   bool isLoading = true;
+  bool hasError = false;
 
   @override
   void initState() {
@@ -31,11 +32,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> fetchVerse() async {
+    setState(() {
+      isLoading = true;
+      hasError = false;
+    });
+
     List<String> topics = Lists.topics;
     int randomIndex = Random().nextInt(topics.length);
     String randomTopic = topics[randomIndex];
 
-    // Construct the API URL with the selected topic
     final url = 'https://getcontext.xyz/api/api.php?query=$randomTopic';
 
     try {
@@ -49,52 +54,48 @@ class _HomeScreenState extends State<HomeScreen> {
           verseSermon = data['sermon_content'] ?? 'No sermon available.';
           verseContent = data['verse_content'] ?? 'Verse not available.';
 
-          // Safely handle commentary URL
           String commentaryUrlString = data['commentary_url'] ?? '';
-          if (commentaryUrlString.isNotEmpty) {
-            commentaryUrl = Uri.tryParse(commentaryUrlString);
-          } else {
-            commentaryUrl = null;
-          }
+          commentaryUrl = commentaryUrlString.isNotEmpty
+              ? Uri.tryParse(commentaryUrlString)
+              : null;
           isLoading = false;
         });
       } else {
-        setState(() {
-          verseReference = 'Error';
-          verseContent = 'Failed to load verse.';
-          isLoading = false;
-        });
+        _handleError('Failed to load verse. Try again later.');
       }
     } catch (e) {
-      setState(() {
-        verseReference = 'Isaiah 60:1';
-        verseContent =
-            'Arise,shine,for your light has come, and the glory of the lord rises upon you.';
-        isLoading = false;
-      });
+      _handleError('Network error. Default verse loaded.');
     }
+  }
+
+  void _handleError(String message) {
+    setState(() {
+      verseReference = 'Isaiah 60:1';
+      verseContent =
+          'Arise, shine, for your light has come, and the glory of the Lord rises upon you.';
+      isLoading = false;
+      hasError = true;
+    });
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _launchUrl(Uri url) async {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      throw 'Could not launch $url';
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Could not launch URL')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Retrieve the token from TokenProvider
     final token = Provider.of<TokenProvider>(context).token;
-
-    // const Color logoutIconColor = Color(0xFF93B1A6);
-
     String userName = "Anonymous";
     String userContacts = "";
 
     if (token != null) {
-      // Decode the token and extract the user's name
       try {
         final jwt = JWT.decode(token);
         userName = jwt.payload['user']['name'] ?? 'User';
@@ -103,102 +104,99 @@ class _HomeScreenState extends State<HomeScreen> {
         print('Error decoding token: $e');
       }
     }
+    bool isDarkMode =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+            Brightness.dark;
+    Color background = isDarkMode
+        ? Colors.black.withOpacity(0.25)
+        : Colors.black.withOpacity(0.1);
     return BaseScaffold(
       title: 'Home',
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(15.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(color: background),
+          ),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text(
-                        userContacts,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                        textAlign: TextAlign.center,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            userContacts,
+                            style:
+                                Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                            textAlign: TextAlign.center,
+                          ),
+                          Text(
+                            userName,
+                            style:
+                                Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
-                      Text(
-                        userName,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
-                        textAlign: TextAlign.center,
+                      Icon(
+                        Icons.account_circle,
+                        size: 50,
+                        color: Theme.of(context)
+                            .appBarTheme
+                            .titleTextStyle!
+                            .color!
+                            .withOpacity(0.8),
                       ),
                     ],
                   ),
-                  Icon(
-                    Icons.account_circle,
-                    size: 50,
-                    color: Theme.of(context)
-                        .appBarTheme
-                        .titleTextStyle!
-                        .color!
-                        .withOpacity(0.8),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              isLoading
-                  ? const CircularProgressIndicator()
-                  : Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Display verse topic
-                        Text(
-                          verseTopic,
-                          style:
-                              Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  const SizedBox(height: 16),
+                  isLoading
+                      ? const CircularProgressIndicator()
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Display verse topic
+                            Text(
+                              verseTopic,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.copyWith(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
                                   ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
 
-                        // Display verse content
-                        Text(
-                          verseContent,
-                          style:
-                              Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            // Display verse content
+                            Text(
+                              verseContent,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.copyWith(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
                                   ),
-                          // textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
+                            ),
+                            const SizedBox(height: 16),
 
-                        // Display verse reference
-                        Text(
-                          verseReference,
-                          style:
-                              Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                          textAlign: TextAlign.end,
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Commentary URL button
-                        if (commentaryUrl != null)
-                          GestureDetector(
-                            onTap: () {
-                              if (commentaryUrl != null) {
-                                _launchUrl(commentaryUrl!);
-                              }
-                            },
-                            child: Text(
-                              " read more:\n $verseSermon",
+                            // Display verse reference
+                            Text(
+                              verseReference,
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyLarge
@@ -206,14 +204,48 @@ class _HomeScreenState extends State<HomeScreen> {
                                     fontSize: 15,
                                     fontWeight: FontWeight.bold,
                                   ),
-                              // textAlign: TextAlign.end,
+                              textAlign: TextAlign.end,
                             ),
-                          ),
-                      ],
-                    ),
-            ],
+                            const SizedBox(height: 16),
+
+                            // Commentary URL button
+                            if (commentaryUrl != null)
+                              GestureDetector(
+                                onTap: () {
+                                  if (commentaryUrl != null) {
+                                    _launchUrl(commentaryUrl!);
+                                  }
+                                },
+                                child: Text(
+                                  "Read more: $verseSermon",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge
+                                      ?.copyWith(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: isDarkMode
+                                            ? Colors.blue
+                                            : Colors.blue[900],
+                                      ),
+                                ),
+                              ),
+                          ],
+                        ),
+                  const SizedBox(height: 20),
+                  // Refresh Button
+                  IconButton(
+                    onPressed: fetchVerse,
+                    icon: const Icon(Icons.refresh),
+                    color: Theme.of(context).primaryColor,
+                    iconSize: 30,
+                    tooltip: 'Refresh for new verse',
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

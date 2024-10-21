@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
 import 'package:frontend/providers/token_provider.dart';
-import 'package:frontend/lit_Screens/baseScaffold.dart';
+import 'package:frontend/lit_Screens/base_scaffold.dart';
 import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
 import 'dart:convert';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart';
@@ -104,6 +105,19 @@ class _HighlightsScreenState extends State<HighlightsScreen> {
     }
   }
 
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Lottie.asset('assets/images/error.json', height: 200),
+          const SizedBox(height: 20),
+          const Text('No highlights found.'),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (first) {
@@ -119,15 +133,7 @@ class _HighlightsScreenState extends State<HighlightsScreen> {
               child: CircularProgressIndicator(), // Show loading indicator
             )
           : _highlights.isEmpty
-              ? Center(
-                  child: Text(
-                    'No highlights found',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyLarge
-                        ?.copyWith(fontSize: 24),
-                  ),
-                )
+              ? Center(child: _buildErrorState())
               : ListView.builder(
                   itemCount: _highlights.length,
                   itemBuilder: (context, index) {
@@ -136,7 +142,8 @@ class _HighlightsScreenState extends State<HighlightsScreen> {
                     final color = _getColorFromName(highlight['color']);
 
                     return Container(
-                      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 5, horizontal: 10),
                       padding: const EdgeInsets.all(15),
                       decoration: BoxDecoration(
                         color: color,

@@ -5,9 +5,10 @@ const mongoose = require('mongoose');
 const setEvent = async (req, res) => {
   try {
     const {
-      title, description, theme, date, time, venue, keyGuests, planners, program
+      title, description, theme, date, time, venue, keyGuests, program
     } = req.body;
-
+    const planners = [req.user.id];
+    
     // Validate that all required fields are provided
     if (!title || !description || !date || !time || !venue) {
       return res.status(400).send({ error: 'Please provide all required fields' });
@@ -71,38 +72,39 @@ const getEventByDate = async (req, res) => {
   }
 };
 
+// Add a program item to an event (addProgramItem)
+const addProgramItem = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { startTime, endTime, description } = req.body;
+
+    // Validate the required fields for the program item
+    if (!startTime || !endTime || !description) {
+      return res.status(400).send({ error: 'Please provide all required fields for the program item' });
+    }
+
+    // Find the event by its ID
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).send({ error: 'Event not found' });
+    }
+
+    // Add the new program item to the program array
+    event.program.push({ startTime, endTime, description });
+
+    // Save the updated event
+    await event.save();
+
+    res.status(200).send(event); // Return the updated event
+  } catch (error) {
+    console.error('Error adding program item:', error);
+    res.status(500).send({ error: 'An error occurred while adding the program item' });
+  }
+};
+
 module.exports = {
   setEvent,
   getEvents,
-  getEventByDate
+  getEventByDate,
+  addProgramItem
 };
-
-// {
-//     "title": "Church Anniversary",
-//     "description": "Celebrating our 10th anniversary",
-//     "theme": "Gratitude and Hope",
-//     "date": "2024-12-01T09:00:00Z",
-//     "time": "09:00 - 17:00",
-//     "venue": "Main Church Hall",
-//     "keyGuests": ["Bishop John", "Pastor Mary"],
-//     "planners": ["605c72ad9e0d5f1e089e9f92", "605c72ad9e0d5f1e089e9f93"],
-//     "program": [
-//       {
-//         "startTime": "09:00",
-//         "endTime": "10:00",
-//         "description": "Welcoming Remarks"
-//       },
-//       {
-//         "startTime": "10:00",
-//         "endTime": "11:00",
-//         "description": "Worship"
-//       },
-//       {
-//         "startTime": "11:00",
-//         "endTime": "12:00",
-//         "description": "Sermon by Bishop John"
-//       }
-//     ]
-//   }
-    
-  

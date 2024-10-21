@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
 import 'package:frontend/providers/token_provider.dart';
-import 'package:frontend/lit_Screens/baseScaffold.dart';
+import 'package:frontend/lit_Screens/base_scaffold.dart';
 import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
 import 'dart:convert';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart';
@@ -104,6 +105,19 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
     return result[0]['verse'].toString();
   }
 
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Lottie.asset('assets/images/error.json', height: 200),
+          const SizedBox(height: 20),
+          const Text('No bookmarks found.'),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (first) {
@@ -121,15 +135,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                 child: CircularProgressIndicator(), // Show loading indicator
               )
             : _groupedBookmarks.isEmpty
-                ? Center(
-                    child: Text(
-                      'No bookmarks found',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.copyWith(fontSize: 24),
-                    ),
-                  )
+                ? Center(child: _buildErrorState())
                 : ListView.builder(
                     itemCount: _groupedBookmarks.keys.length,
                     itemBuilder: (context, index) {

@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:frontend/chat_Screens/home.dart';
-import 'package:frontend/events/eventsList.dart';
+import 'package:frontend/events/events_list.dart';
 import 'package:frontend/providers/token_provider.dart';
 import 'package:frontend/lit_Screens/account.dart';
 import 'package:frontend/auth/splash.dart';
@@ -123,9 +123,7 @@ class MyApp extends StatelessWidget {
       ),
       textTheme: const TextTheme(
         bodySmall: TextStyle(
-            color: Color(0xFFF2F2F2),
-            fontSize: 15,
-            fontWeight: FontWeight.bold),
+            color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
         headlineLarge: TextStyle(color: Color(0xFFF2F2F2)), // #F2F2F2
         bodyLarge: TextStyle(
             color: Color(0xFFF2F2F2),
@@ -137,7 +135,7 @@ class MyApp extends StatelessWidget {
             fontWeight: FontWeight.bold),
       ),
       buttonTheme: ButtonThemeData(
-        buttonColor: Color(0xFF010D00), // #010D00
+        buttonColor: const Color(0xFF010D00), // #010D00
         textTheme: ButtonTextTheme.primary,
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         shape: RoundedRectangleBorder(

@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
 import 'package:frontend/providers/token_provider.dart';
-import 'package:frontend/lit_Screens/baseScaffold.dart';
+import 'package:frontend/lit_Screens/base_scaffold.dart';
 import 'package:frontend/lit_Screens/book/books.dart';
 import 'package:http/http.dart';
 import 'package:logger/logger.dart';
@@ -15,8 +15,7 @@ class VersesScreen extends StatefulWidget {
   final int bookNo;
   final int chapter;
 
-  const VersesScreen({Key? key, required this.bookNo, required this.chapter})
-      : super(key: key);
+  const VersesScreen({super.key, required this.bookNo, required this.chapter});
 
   @override
   _VersesScreenState createState() => _VersesScreenState();

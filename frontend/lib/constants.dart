@@ -10,6 +10,7 @@ class ApiConstants {
   static const String directMessageEndpoint = '$authbaseUrl/api/direct';
   static const String group = '$authbaseUrl/api/groups';
   static const String event = '$authbaseUrl/api/events';
+  static const String programItem = '$authbaseUrl/api/events/programItem';
   static const String addToGroup = '$authbaseUrl/api/groups/add';
   static const String groupMessages = '$authbaseUrl/api/groups/messages';
   static const String passwordResetSendEndpoint =
