@@ -36,7 +36,7 @@ class _BooksScreenState extends State<BooksScreen> {
             decoration: BoxDecoration(color: background),
           ),
           Padding(
-            padding: const EdgeInsets.all(16.0), // Add padding for better UI
+            padding: const EdgeInsets.symmetric(horizontal: 16.0), // Add padding for better UI
             child: FutureBuilder<List<int>>(
               future: booksFuture,
               builder: (context, snapshot) {

@@ -163,8 +163,6 @@ class _SplashScreenState extends State<SplashScreen>
                               ?.copyWith(
                             fontSize: 36, // Set custom font size
                             fontWeight: FontWeight.bold, // Bold text
-                            color: Theme.of(context)
-                                .primaryColor, // Use primary color
                             shadows: const [
                               Shadow(
                                 blurRadius: 4.0,
@@ -193,6 +191,14 @@ class _SplashScreenState extends State<SplashScreen>
                           // Retry button if error occurs
                           ElevatedButton(
                             onPressed: _retryInitialization,
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                              // Add any default style properties here
+                              padding:
+                                  const EdgeInsets.all(16.0), // example padding
+                            ),
                             child: Text('Retry',
                                 style: Theme.of(context).textTheme.bodySmall),
                           ),

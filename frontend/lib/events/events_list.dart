@@ -121,6 +121,14 @@ class _EventListScreenState extends State<EventListScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12.0),
+                                  ),
+                                  // Add any default style properties here
+                                  padding: const EdgeInsets.all(
+                                      16.0), // example padding
+                                ),
                                 onPressed: () {
                                   Navigator.pushReplacement(
                                     context,
@@ -132,23 +140,25 @@ class _EventListScreenState extends State<EventListScreen> {
                                 child: Text(
                                   "Set Event",
                                   style: GoogleFonts.lato(
-                                    textStyle: TextStyle(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .secondary),
+                                    textStyle: const TextStyle(),
                                   ),
                                 ),
                               ),
                               const SizedBox(width: 10),
                               ElevatedButton(
                                 onPressed: _showAllEvents,
+                                style: ElevatedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12.0),
+                                  ),
+                                  // Add any default style properties here
+                                  padding: const EdgeInsets.all(
+                                      16.0), // example padding
+                                ),
                                 child: Text(
                                   "All Events",
                                   style: GoogleFonts.lato(
-                                    textStyle: TextStyle(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .secondary),
+                                    textStyle: const TextStyle(),
                                   ),
                                 ),
                               ),
@@ -277,6 +287,15 @@ class _EventListScreenState extends State<EventListScreen> {
               itemBuilder: (context, index) {
                 final event = selectedEvents[index];
                 return ListTile(
+                  onTap: () {
+                    print(event['date']);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EventDetailScreen(event: event),
+                      ),
+                    );
+                  },
                   title: Align(
                     alignment: Alignment.topCenter,
                     child: Text(event['title'] ?? 'No Title',
@@ -291,34 +310,103 @@ class _EventListScreenState extends State<EventListScreen> {
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.description, color: Colors.blue),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              event['description'] ?? 'No Description',
-                              style: GoogleFonts.poppins(
-                                textStyle:
-                                    Theme.of(context).textTheme.bodyMedium,
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.description, color: Colors.blue),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                event['description'] ?? 'No Description',
+                                style: Theme.of(context).textTheme.bodyLarge,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          const Icon(Icons.schedule, color: Colors.blue),
-                          const SizedBox(width: 10),
-                          Text(
-                            event['date'] ?? 'No Date',
-                            style: GoogleFonts.poppins(
-                              textStyle:
-                                  Theme.of(context).textTheme.bodyMedium,
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.monitor_heart_outlined,
+                                color: Colors.green),
+                            const SizedBox(width: 10),
+                            Text('Theme: ${event['theme'] ?? 'N/A'}',
+                                style: Theme.of(context).textTheme.bodyMedium),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.calendar_today,
+                                color: Colors.orange),
+                            const SizedBox(width: 10),
+                            Text(
+                                'Date: ${selectedDay.day}/${selectedDay.month}/${selectedDay.year}',
+                                style: Theme.of(context).textTheme.bodyMedium),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.access_time, color: Colors.purple),
+                            const SizedBox(width: 10),
+                            Text('Time: ${event['time'] ?? 'N/A'}',
+                                style: Theme.of(context).textTheme.bodyMedium),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.location_on, color: Colors.red),
+                            const SizedBox(width: 10),
+                            Text('Venue: ${event['venue'] ?? 'N/A'}',
+                                style: Theme.of(context).textTheme.bodyMedium),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.people, color: Colors.cyan),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Key Guests: ${event['keyGuests']?.join(', ') ?? 'N/A'}',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.person_add, color: Colors.amber),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Planners: ${event['planners']?.map((planner) => planner['name'])?.join(', ') ?? 'N/A'}',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -334,15 +422,12 @@ class _EventListScreenState extends State<EventListScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Lottie.asset('assets/lotties/error.json', width: 150),
+          Lottie.asset('assets/images/error.json', width: 150),
           const SizedBox(height: 20),
           Text(
             'Failed to load events.',
             style: GoogleFonts.poppins(
-              textStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                    color: Colors.redAccent,
-                  ),
-            ),
+                textStyle: Theme.of(context).textTheme.bodyLarge),
           ),
         ],
       ),

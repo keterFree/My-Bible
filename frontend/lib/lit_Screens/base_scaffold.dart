@@ -114,7 +114,9 @@ class BaseScaffold extends StatelessWidget {
             ),
           ),
           floatingActionButton: FloatingActionButton(
-            backgroundColor: Theme.of(context).primaryColor,
+            backgroundColor: isDarkMode
+                ? Colors.white.withOpacity(0.9)
+                : Theme.of(context).colorScheme.secondary,
             foregroundColor: Theme.of(context).scaffoldBackgroundColor,
             onPressed: () => Navigator.pushNamed(context, '/homeChat'),
             tooltip: 'Chat',

@@ -240,7 +240,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           borderRadius: BorderRadius.circular(12.0),
         ),
         // Add any default style properties here
-        padding: const EdgeInsets.all(16.0), // example padding
+        padding: const EdgeInsets.symmetric(horizontal: 16.0), // example padding
       ),
       child: _isLoading
           ? const CircularProgressIndicator(color: Colors.white)

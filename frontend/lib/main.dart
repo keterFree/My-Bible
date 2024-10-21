@@ -82,18 +82,15 @@ class MyApp extends StatelessWidget {
         bodySmall: TextStyle(
             // color: Color(0xFF0D0D0D),
             color: Colors.black,
-            fontSize: 15,
             fontWeight: FontWeight.bold),
         headlineLarge: TextStyle(color: Color(0xFF731212)), // #731212
         bodyLarge: TextStyle(
             // color: Color(0xFF0D0D0D),
             color: Colors.white,
-            fontSize: 18,
             fontWeight: FontWeight.bold), // #0D0D0D
         bodyMedium: TextStyle(
             // color: Color(0xFF0D0D0D),
             color: Colors.white,
-            fontSize: 18,
             fontWeight: FontWeight.bold),
       ),
       buttonTheme: const ButtonThemeData(
@@ -102,7 +99,7 @@ class MyApp extends StatelessWidget {
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Color.fromARGB(158, 218, 119, 145), // #A61C41
-        titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
+        titleTextStyle: TextStyle(color: Colors.white, fontSize: 24),
       ),
       iconTheme: const IconThemeData(
         color: Color.fromARGB(255, 185, 29, 29), // #731212
@@ -117,22 +114,17 @@ class MyApp extends StatelessWidget {
 
       scaffoldBackgroundColor: const Color.fromARGB(255, 0, 0, 0), // #8C808C
       colorScheme: ColorScheme.fromSwatch().copyWith(
-        primary: const Color(0xFFF2F2F2), // #F2F2F2
+        primary: const Color.fromARGB(255, 99, 15, 15), // #F2F2F2
         secondary: const Color(0xFF731212), // #731212
         surface: const Color(0xFF8C808C), // #8C808C
       ),
       textTheme: const TextTheme(
-        bodySmall: TextStyle(
-            color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+        bodySmall: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         headlineLarge: TextStyle(color: Color(0xFFF2F2F2)), // #F2F2F2
         bodyLarge: TextStyle(
-            color: Color(0xFFF2F2F2),
-            fontSize: 18,
-            fontWeight: FontWeight.bold), // #F2F2F2
-        bodyMedium: TextStyle(
-            color: Color(0xFFF2F2F2),
-            fontSize: 18,
-            fontWeight: FontWeight.bold),
+            color: Color(0xFFF2F2F2), fontWeight: FontWeight.bold), // #F2F2F2
+        bodyMedium:
+            TextStyle(color: Color(0xFFF2F2F2), fontWeight: FontWeight.bold),
       ),
       buttonTheme: ButtonThemeData(
         buttonColor: const Color(0xFF010D00), // #010D00
@@ -144,7 +136,7 @@ class MyApp extends StatelessWidget {
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Color(0xFF010D00), // #010D00
-        titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
+        titleTextStyle: TextStyle(color: Colors.white, fontSize: 24),
       ),
       iconTheme: const IconThemeData(
         color: Color(0xFFD93030), // #D93030

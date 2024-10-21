@@ -36,11 +36,16 @@ class EventDetailScreen extends StatelessWidget {
                           ),
                         );
                       },
-                      child: Text("Program",
-                          style: TextStyle(
-                              fontFamily: 'Roboto',
-                              fontSize: 16,
-                              color: Theme.of(context).colorScheme.secondary)),
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        // Add any default style properties here
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0), // example padding
+                      ),
+                      child: const Text(
+                        "Program",
+                      ),
                     ),
                   ),
                   const SizedBox(height: 10),

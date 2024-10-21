@@ -19,11 +19,7 @@ class GroupsListScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(7),
               boxShadow: [
                 BoxShadow(
-                  color: Theme.of(context)
-                      .textTheme
-                      .bodyLarge!
-                      .color!
-                      .withOpacity(0.2),
+                  color: Colors.black.withOpacity(0.2),
                   spreadRadius: 1,
                   blurRadius: 4,
                   offset: const Offset(0, 3), // Changes position of shadow
@@ -42,7 +38,7 @@ class GroupsListScreen extends StatelessWidget {
                 '${groups[index]['description'] ?? 'No description available'}',
                 style: Theme.of(context)
                     .textTheme
-                    .bodySmall!
+                    .bodyLarge!
                     .copyWith(fontSize: 12, fontStyle: FontStyle.italic),
               ),
               trailing: Text(

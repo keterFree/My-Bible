@@ -237,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   IconButton(
                     onPressed: fetchVerse,
                     icon: const Icon(Icons.refresh),
-                    color: Theme.of(context).primaryColor,
+                    color: Colors.white.withOpacity(0.8),
                     iconSize: 30,
                     tooltip: 'Refresh for new verse',
                   ),

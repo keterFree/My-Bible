@@ -187,7 +187,10 @@ class _AccountScreenState extends State<AccountScreen> {
               // Display user details
               Row(
                 children: [
-                  const Icon(Icons.account_circle, size: 60),
+                  Icon(Icons.account_circle,
+                      size: 60,
+                      color:
+                          Theme.of(context).appBarTheme.titleTextStyle!.color),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -212,10 +215,13 @@ class _AccountScreenState extends State<AccountScreen> {
                     .appBarTheme
                     .titleTextStyle!
                     .color!
-                    .withOpacity(0.4),
+                    .withOpacity(0.1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 leading: Icon(
                   isEditingName ? Icons.cancel : Icons.edit,
-                  color: Theme.of(context).primaryColor,
+                  color: Theme.of(context).appBarTheme.titleTextStyle!.color,
                 ),
                 title: Text(isEditingName ? 'Cancel' : 'Edit Name',
                     style: Theme.of(context).textTheme.bodyMedium),
@@ -251,12 +257,15 @@ class _AccountScreenState extends State<AccountScreen> {
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        child: Text(
-                          'Save',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.secondary,
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
                           ),
+                          // Add any default style properties here
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0), // example padding
                         ),
+                        child: const Text('Save'),
                         onPressed: () => _updateUserDetails(_nameFormKey),
                       ),
                     ],
@@ -270,10 +279,13 @@ class _AccountScreenState extends State<AccountScreen> {
                     .appBarTheme
                     .titleTextStyle!
                     .color!
-                    .withOpacity(0.4),
+                    .withOpacity(0.1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 leading: Icon(
                   isEditingPhone ? Icons.cancel : Icons.edit,
-                  color: Theme.of(context).primaryColor,
+                  color: Theme.of(context).appBarTheme.titleTextStyle!.color,
                 ),
                 title: Text(isEditingPhone ? 'Cancel' : 'Edit Phone Number',
                     style: Theme.of(context).textTheme.bodyMedium),
@@ -320,11 +332,16 @@ class _AccountScreenState extends State<AccountScreen> {
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        child: Text(
-                          'Save',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.secondary,
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
                           ),
+                          // Add any default style properties here
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0), // example padding
+                        ),
+                        child: const Text(
+                          'Save',
                         ),
                         onPressed: () => _updateUserDetails(_phoneFormKey),
                       ),
@@ -339,10 +356,13 @@ class _AccountScreenState extends State<AccountScreen> {
                     .appBarTheme
                     .titleTextStyle!
                     .color!
-                    .withOpacity(0.4),
+                    .withOpacity(0.1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 leading: Icon(
                   isChangingPassword ? Icons.cancel : Icons.lock,
-                  color: Theme.of(context).primaryColor,
+                  color: Theme.of(context).appBarTheme.titleTextStyle!.color,
                 ),
                 title: Text(isChangingPassword ? 'Cancel' : 'Change Password',
                     style: Theme.of(context).textTheme.bodyMedium),
@@ -412,12 +432,15 @@ class _AccountScreenState extends State<AccountScreen> {
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        child: Text(
-                          'Save',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.secondary,
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
                           ),
+                          // Add any default style properties here
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0), // example padding
                         ),
+                        child: const Text('Save'),
                         onPressed: () => _updateUserDetails(_passwordFormKey),
                       ),
                     ],

@@ -110,17 +110,19 @@ class _VersesScreenState extends State<VersesScreen> {
           ),
           actions: <Widget>[
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                // Add any default style properties here
+                padding: const EdgeInsets.symmetric(horizontal: 16.0), // example padding
+              ),
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
                 _bookmarkSelectedVerses(token, noteController.text,
                     context); // Call the bookmark method with the note
               },
-              child: Text(
-                'Save Bookmark',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.secondary,
-                ),
-              ),
+              child: const Text('Save Bookmark'),
             ),
             TextButton(
               onPressed: () {
@@ -136,14 +138,14 @@ class _VersesScreenState extends State<VersesScreen> {
 
   void _showOptions(BuildContext context, token) {
     showModalBottomSheet(
-      backgroundColor: Theme.of(context).cardColor,
+      backgroundColor: Colors.white.withOpacity(0.8),
       context: context,
       builder: (context) {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              textColor: Theme.of(context).primaryColor,
+              textColor: Theme.of(context).colorScheme.secondary,
               leading: Icon(Icons.highlight,
                   color: Theme.of(context).iconTheme.color),
               title: const Text('Highlight'),
@@ -153,7 +155,7 @@ class _VersesScreenState extends State<VersesScreen> {
               },
             ),
             ListTile(
-              textColor: Theme.of(context).primaryColor,
+              textColor: Theme.of(context).colorScheme.secondary,
               leading: Icon(Icons.bookmark,
                   color: Theme.of(context).iconTheme.color),
               title: const Text('Bookmark'),
@@ -326,7 +328,9 @@ class _VersesScreenState extends State<VersesScreen> {
               bottom: 80,
               right: 20,
               child: FloatingActionButton(
-                backgroundColor: Theme.of(context).primaryColor,
+                backgroundColor: isDarkMode
+                    ? Colors.white.withOpacity(0.9)
+                    : Theme.of(context).colorScheme.secondary,
                 foregroundColor: Theme.of(context).scaffoldBackgroundColor,
                 onPressed: () =>
                     _showOptions(context, token), // Correct function reference

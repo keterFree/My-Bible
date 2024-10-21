@@ -21,35 +21,74 @@ class _ProgramScreenState extends State<ProgramScreen> {
   String? startTime;
   String? endTime;
   String? description;
+  int? editingIndex;
 
-  // Function to convert TimeOfDay to HH:mm format
-  String _formatTimeOfDay(TimeOfDay time) {
-    String timed =
-        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-    print(timed);
-    return timed;
+  List<Map<String, dynamic>> programItems = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchEventDetails(); // Fetch event details from the API
   }
 
-  // Function to show time picker and update start time
+  Future<void> _fetchEventDetails() async {
+    final token = Provider.of<TokenProvider>(context, listen: false).token;
+    final url = Uri.parse('${ApiConstants.event}/byId/${widget.event['_id']}');
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print(response.body);
+        final eventData = jsonDecode(response.body);
+        setState(() {
+          programItems = List<Map<String, dynamic>>.from(eventData['program']);
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load event: ${response.body}');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    }
+  }
+
+  String _formatTimeOfDay(TimeOfDay time) {
+    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+  }
+
   Future<void> _selectStartTime() async {
     TimeOfDay? pickedTime = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
+        context: context,
+        initialTime:
+            startTime != null && (DateTime.tryParse(startTime!) != null)
+                ? TimeOfDay.fromDateTime(DateTime.parse(startTime!))
+                : TimeOfDay.now());
     if (pickedTime != null) {
       setState(() {
-        startTime = _formatTimeOfDay(
-            pickedTime); // Convert and format the selected time
+        startTime = _formatTimeOfDay(pickedTime);
       });
     }
   }
 
-  // Function to show time picker and update end time
   Future<void> _selectEndTime() async {
     TimeOfDay? pickedTime = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
+        context: context,
+        initialTime: endTime != null && (DateTime.tryParse(endTime!) != null)
+            ? TimeOfDay.fromDateTime(DateTime.parse(endTime!))
+            : TimeOfDay.now());
     if (pickedTime != null) {
       setState(() {
         endTime = _formatTimeOfDay(pickedTime);
@@ -57,12 +96,19 @@ class _ProgramScreenState extends State<ProgramScreen> {
     }
   }
 
-  // Function to handle adding a new program item
-  Future<void> _addProgramItem() async {
+  Future<void> _addOrEditProgramItem() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      // Prepare the request body
+      if (startTime == null ||
+          endTime == null ||
+          (description?.isEmpty ?? true)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please complete all fields.')),
+        );
+        return;
+      }
+
       final body = {
         'startTime': startTime!,
         'endTime': endTime!,
@@ -70,168 +116,136 @@ class _ProgramScreenState extends State<ProgramScreen> {
       };
       final token = Provider.of<TokenProvider>(context, listen: false).token;
 
-      // Send a POST request to the API
       try {
-        Uri url =
-            Uri.parse('${ApiConstants.programItem}/${widget.event['_id']}');
-        print(url.toString());
-        final response = await http.post(
-          url,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
-          body: jsonEncode(body),
-        );
+        Uri url;
+        http.Response response;
 
-        // Check the response status
-        if (response.statusCode == 200) {
-          // If the server returns a 200 OK response, add the program item to the list
-          setState(() {
-            widget.event['program'].add(body);
-          });
-          Navigator.pop(context); // Close the modal after saving
+        if (editingIndex != null) {
+          final programItem = programItems[editingIndex!];
+          url = Uri.parse(
+              '${ApiConstants.programItem}/${widget.event['_id']}/${programItem['_id']}');
+          response = await http.put(
+            url,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode(body),
+          );
         } else {
-          // Handle errors or display a message
+          url = Uri.parse('${ApiConstants.programItem}/${widget.event['_id']}');
+          response = await http.post(
+            url,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode(body),
+          );
+        }
+
+        if (response.statusCode == 200) {
+          final eventData = jsonDecode(response.body);
+          setState(() {
+            programItems =
+                List<Map<String, dynamic>>.from(eventData['program']);
+            isLoading = false;
+          });
+          Navigator.pop(context);
+        } else {
+          Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text('Failed to add program item: ${response.body}')),
+            SnackBar(content: Text('Operation failed: ${response.body}')),
           );
         }
       } catch (e) {
-        print('Error: $e');
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('An error occurred while adding the program item')),
+          SnackBar(content: Text('Error: ${e.toString()}')),
         );
       }
     }
   }
 
-  // Function to open a modal for updating/adding a program item
-  void _showUpdateProgramDialog() {
+  void _showProgramDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          surfaceTintColor: Colors.red,
-          backgroundColor:
-              Theme.of(context).scaffoldBackgroundColor.withOpacity(0.9),
-          title: Text("Add Program Item",
-              style: Theme.of(context).textTheme.bodySmall),
+          title: Text(
+              editingIndex != null ? "Edit Program Item" : "Add Program Item"),
           content: Form(
             key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Start Time Input
-                  GestureDetector(
-                    onTap: _selectStartTime,
-                    child: AbsorbPointer(
-                      child: TextFormField(
-                        style: Theme.of(context).textTheme.bodySmall,
-                        decoration: InputDecoration(
-                            labelText: "Start Time",
-                            labelStyle: Theme.of(context).textTheme.bodySmall),
-                        readOnly: true,
-                        validator: (value) {
-                          final RegExp timeRegex =
-                              RegExp(r'^([01]\d|2[0-3]):([0-5]\d)$');
-                          if (startTime == null ||
-                              startTime!.isEmpty ||
-                              !timeRegex.hasMatch(startTime!)) {
-                            return "Please enter a valid start time in HH:mm format";
-                          }
-                          return null;
-                        },
-                        onSaved: (value) {
-                          startTime = value;
-                          print(startTime);
-                        },
-                      ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: _selectStartTime,
+                  child: AbsorbPointer(
+                    child: TextFormField(
+                      decoration: InputDecoration(
+                          labelText: startTime ?? "Select Start Time"),
+                      readOnly: true,
                     ),
                   ),
-                  const SizedBox(height: 10),
-
-                  // End Time Input
-                  GestureDetector(
-                    onTap: _selectEndTime,
-                    child: AbsorbPointer(
-                      child: TextFormField(
-                        style: Theme.of(context).textTheme.bodySmall,
-                        decoration: InputDecoration(
-                            labelText: "End Time",
-                            labelStyle: Theme.of(context).textTheme.bodySmall),
-                        readOnly: true,
-                        validator: (value) {
-                          final RegExp timeRegex =
-                              RegExp(r'^([01]\d|2[0-3]):([0-5]\d)$');
-                          if (endTime == null ||
-                              endTime!.isEmpty ||
-                              !timeRegex.hasMatch(endTime!)) {
-                            return "Please enter a valid end time in HH:mm format";
-                          }
-                          return null;
-                        },
-                        onSaved: (value) {
-                          endTime = value;
-                          print(endTime);
-                        },
-                      ),
+                ),
+                const SizedBox(height: 10),
+                GestureDetector(
+                  onTap: _selectEndTime,
+                  child: AbsorbPointer(
+                    child: TextFormField(
+                      decoration: InputDecoration(
+                          labelText: endTime ?? "Select End Time"),
+                      readOnly: true,
                     ),
                   ),
-                  const SizedBox(height: 10),
-
-                  // Description Input
-                  TextFormField(
-                    style: Theme.of(context).textTheme.bodySmall,
-                    decoration: InputDecoration(
-                        labelText: "Description",
-                        labelStyle: Theme.of(context).textTheme.bodySmall),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Please enter a description";
-                      }
-                      return null;
-                    },
-                    onSaved: (value) {
-                      description = value;
-                    },
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  initialValue: description,
+                  decoration: InputDecoration(labelText: "Description"),
+                  onSaved: (value) => description = value,
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Please enter a description'
+                      : null,
+                ),
+                const SizedBox(height: 20),
+                // Preview Section
+                if (startTime != null && endTime != null && description != null)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Preview:",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 5),
+                      Text("Start Time: $startTime"),
+                      Text("End Time: $endTime"),
+                      Text("Description: $description"),
+                    ],
                   ),
-                ],
-              ),
+              ],
             ),
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Close the dialog
+                _clearForm();
+                Navigator.pop(context);
               },
               child: const Text("Cancel"),
             ),
             ElevatedButton(
-              onPressed: _addProgramItem,
-              child: Text("Add Program",
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary)),
+              onPressed: () {
+                _addOrEditProgramItem();
+                _clearForm();
+              },
+              child: Text(editingIndex != null ? "Save Changes" : "Add Item"),
             ),
           ],
         );
       },
-    );
-  }
-
-  Widget _buildErrorState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Lottie.asset('assets/images/error.json', height: 200),
-          const SizedBox(height: 20),
-          const Text('The program is currently not available.'),
-        ],
-      ),
     );
   }
 
@@ -254,23 +268,16 @@ class _ProgramScreenState extends State<ProgramScreen> {
                 Align(
                   alignment: Alignment.topRight,
                   child: ElevatedButton(
-                    onPressed: _showUpdateProgramDialog,
-                    child: Text("Update Program",
-                        style: TextStyle(
-                            fontFamily: 'Roboto',
-                            fontSize: 16,
-                            color: Theme.of(context).colorScheme.secondary)),
-                  ),
-                ),
-                const Text(
-                  "Program Schedule",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 30,
-                    letterSpacing: 2.0,
-                    color: Colors.white,
+                    onPressed: () => _showProgramDialog(),
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      // Add any default style properties here
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0), // example padding
+                    ),
+                    child: const Text("Add Program Item"),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -278,68 +285,79 @@ class _ProgramScreenState extends State<ProgramScreen> {
                     ? _buildErrorState()
                     : Expanded(
                         child: ListView.builder(
-                          itemCount: widget.event['program'].length,
+                          itemCount: programItems.length,
                           itemBuilder: (context, index) {
-                            final programItem = widget.event['program'][index];
+                            final programItem = programItems[index];
+                            print('build:  $programItem\n\n');
                             return Card(
-                              color: const Color.fromARGB(150, 0, 0, 0),
-                              margin: const EdgeInsets.symmetric(vertical: 10),
+                              color: const Color.fromARGB(100, 0, 0, 0),
                               elevation: 3,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Padding(
                                 padding: const EdgeInsets.all(12.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
+                                child: ListTile(
+                                  leading: SizedBox(
+                                    width: 90, // Fixed width to avoid overflow
+                                    child: Column(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                                          MainAxisAlignment.center,
                                       children: [
                                         Text(
-                                          programItem['startTime']!,
+                                          programItem['startTime'] ?? 'N/A',
                                           style: Theme.of(context)
                                               .textTheme
                                               .bodyLarge!
                                               .copyWith(
                                                 fontFamily: 'Roboto',
                                                 fontWeight: FontWeight.bold,
-                                                fontSize: 20,
                                               ),
                                         ),
-                                        const Text(
-                                          'to',
-                                          style: TextStyle(
-                                            fontFamily: 'Roboto',
-                                            fontSize: 16,
-                                          ),
-                                        ),
+                                        // const SizedBox(height: 4),
                                         Text(
-                                          programItem['endTime']!,
+                                          programItem['endTime'] ?? 'N/A',
                                           style: Theme.of(context)
                                               .textTheme
                                               .bodyLarge!
                                               .copyWith(
                                                 fontFamily: 'Roboto',
                                                 fontWeight: FontWeight.bold,
-                                                fontSize: 20,
                                               ),
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 10),
-                                    Text(
-                                      programItem['description']!,
-                                      style: Theme.of(context)
+                                  ),
+                                  title: Text(
+                                    programItem['description'] ??
+                                        'No Description',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge!
+                                        .copyWith(
+                                          fontFamily: 'Roboto',
+                                          fontWeight: FontWeight.normal,
+                                        ),
+                                  ),
+                                  trailing: IconButton(
+                                    icon: Icon(
+                                      Icons.edit,
+                                      color: Theme.of(context)
                                           .textTheme
-                                          .bodyMedium!
-                                          .copyWith(
-                                            fontFamily: 'Roboto',
-                                            fontSize: 16,
-                                          ),
+                                          .bodyLarge!
+                                          .color,
                                     ),
-                                  ],
+                                    onPressed: () {
+                                      editingIndex = index;
+                                      setState(() {
+                                        startTime = programItem['startTime'];
+                                        endTime = programItem['endTime'];
+                                        description =
+                                            programItem['description'];
+                                      });
+                                      _showProgramDialog();
+                                    },
+                                  ),
                                 ),
                               ),
                             );
@@ -349,6 +367,49 @@ class _ProgramScreenState extends State<ProgramScreen> {
               ],
             ),
           ),
+        ],
+      ),
+      // isLoading
+      //     ? Center(child: CircularProgressIndicator())
+      //     : programItems.isEmpty
+      //         ? _buildErrorState()
+      //         : ListView.builder(
+      //             itemCount: programItems.length,
+      //             itemBuilder: (context, index) {
+      //               final item = programItems[index];
+      //               print("build : ${item.toString()}");
+      //               return ListTile(
+      //                 title: Text(item['description'] ?? 'No Description'),
+      //                 subtitle:
+      //                     Text('${item['startTime']} - ${item['endTime']}'),
+      //                 trailing: IconButton(
+      //                   icon: const Icon(Icons.edit),
+      //                   onPressed: () => _showProgramDialog(),
+      //                 ),
+      //               );
+      //             },
+      //           ),
+    );
+  }
+
+  void _clearForm() {
+    setState(() {
+      startTime = null;
+      endTime = null;
+      description = null;
+      editingIndex = null;
+      _formKey.currentState?.reset();
+    });
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Lottie.asset('assets/images/error.json', height: 200),
+          const SizedBox(height: 20),
+          const Text('The program is currently not available.'),
         ],
       ),
     );

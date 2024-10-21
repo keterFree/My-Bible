@@ -206,7 +206,8 @@ class _AddMembersOrLeadersPageState extends State<AddMembersOrLeadersPage> {
                               _onUserSelected(user['_id'], false);
                             },
                             activeColor: Theme.of(context)
-                                .primaryColor, // Custom color for WhatsApp-like style
+                                .colorScheme
+                                .secondary, // Custom color for WhatsApp-like style
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(4.0),
                             ),

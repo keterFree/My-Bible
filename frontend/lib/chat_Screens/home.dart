@@ -6,6 +6,7 @@ import 'package:frontend/lit_Screens/base_scaffold.dart';
 import 'package:frontend/providers/token_provider.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
 import 'dart:convert';
 import 'package:provider/provider.dart';
 
@@ -23,6 +24,10 @@ class _ChatHomeScreenState extends State<ChatHomeScreen>
   String userName = 'Anonymous';
   String userContacts = '';
   bool ones = true;
+
+  bool _isLoading = true; // Loading indicator state
+  bool _hasError = false; // Error flag
+
   List<dynamic> allGroups = [];
   List<dynamic> allUsers = [];
 
@@ -30,9 +35,7 @@ class _ChatHomeScreenState extends State<ChatHomeScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _fetchUserDetails();
-    _fetchGroups();
-    _fetchUsers();
+    _fetchData(); // Combined fetch
   }
 
   @override
@@ -41,11 +44,32 @@ class _ChatHomeScreenState extends State<ChatHomeScreen>
     super.dispose();
   }
 
+  Future<void> _fetchData() async {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
+
+    try {
+      await _fetchUserDetails();
+      await Future.wait([_fetchGroups(), _fetchUsers()]);
+    } catch (e) {
+      setState(() {
+        _hasError = true;
+      });
+      print('Error fetching data: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   Future<void> _fetchUserDetails() async {
     final token = Provider.of<TokenProvider>(context, listen: false).token;
     if (token == null) {
       print("Token not found or expired");
-      return;
+      throw Exception('Invalid token');
     }
 
     try {
@@ -57,12 +81,13 @@ class _ChatHomeScreenState extends State<ChatHomeScreen>
       });
     } catch (e) {
       print('Error decoding token: $e');
+      throw e;
     }
   }
 
   Future<void> _fetchGroups() async {
     final token = Provider.of<TokenProvider>(context, listen: false).token;
-    if (token == null) return;
+    if (token == null) throw Exception('Invalid token');
 
     try {
       var url = Uri.parse(ApiConstants.group);
@@ -74,15 +99,17 @@ class _ChatHomeScreenState extends State<ChatHomeScreen>
         });
       } else {
         print('Failed to fetch groups: ${response.statusCode}');
+        throw Exception('Failed to fetch groups');
       }
     } catch (e) {
       print('Error fetching groups: $e');
+      throw e;
     }
   }
 
   Future<void> _fetchUsers() async {
     final token = Provider.of<TokenProvider>(context, listen: false).token;
-    if (token == null) return;
+    if (token == null) throw Exception('Invalid token');
 
     try {
       var url = Uri.parse(ApiConstants.user);
@@ -94,96 +121,149 @@ class _ChatHomeScreenState extends State<ChatHomeScreen>
         });
       } else {
         print('Failed to fetch users: ${response.statusCode}');
+        throw Exception('Failed to fetch users');
       }
     } catch (e) {
       print('Error fetching users: $e');
+      throw e;
     }
+  }
+
+  Widget _buildLoadingIndicator() {
+    return const Center(
+      child: CircularProgressIndicator(),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Lottie.asset('assets/images/error.json', height: 200),
+          const SizedBox(height: 20),
+          const Text(
+            'Failed to load members.\nPlease try again',
+            textAlign: TextAlign.center,
+          ),
+          ElevatedButton(
+            onPressed: _fetchData,
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return BaseScaffold(
       title: "Chats",
-      body: Column(
+      body: Stack(
         children: [
-          // User Info Section
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  ones ? "Groups" : "Members",
-                  style: TextStyle(
-                    color: Theme.of(context).appBarTheme.titleTextStyle!.color,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+          Container(
+              decoration: BoxDecoration(color: Colors.black.withOpacity(0.2))),
+          _isLoading
+              ? _buildLoadingIndicator() // Show loading indicator
+              : _hasError
+                  ? _buildErrorState() // Show error state
+                  : Column(
                       children: [
-                        Text(
-                          userContacts,
-                          style:
-                              Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
+                        // User Info Section
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                ones ? "Groups" : "Members",
+                                style: TextStyle(
+                                  color: Theme.of(context)
+                                      .appBarTheme
+                                      .titleTextStyle!
+                                      .color,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        userContacts,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge
+                                            ?.copyWith(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      Text(
+                                        userName,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge
+                                            ?.copyWith(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
                                   ),
-                          textAlign: TextAlign.center,
+                                  const Icon(Icons.account_circle, size: 50),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                        Text(
-                          userName,
-                          style:
-                              Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                          textAlign: TextAlign.center,
+                        const SizedBox(height: 10),
+
+                        // TabBar for Group and One-on-One Chats
+                        TabBar(
+                          onTap: (value) => {
+                            setState(() {
+                              ones = !ones;
+                            })
+                          },
+                          controller: _tabController,
+                          labelColor: Theme.of(context)
+                              .appBarTheme
+                              .titleTextStyle!
+                              .color,
+                          unselectedLabelColor:
+                              Theme.of(context).textTheme.bodyMedium!.color,
+                          indicatorColor: Theme.of(context)
+                              .appBarTheme
+                              .titleTextStyle!
+                              .color,
+                          tabs: const [
+                            Tab(text: 'Chats'),
+                            Tab(text: 'Groups'),
+                          ],
+                        ),
+
+                        // TabBarView to display GroupChatScreen and OneOnOneChatScreen
+                        Expanded(
+                          child: TabBarView(
+                            controller: _tabController,
+                            children: [
+                              UsersListScreen(
+                                users: allUsers,
+                                currentUser: userId,
+                              ), // Display User List
+                              GroupsListScreen(
+                                  groups: allGroups), // Display Group List
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                    const Icon(Icons.account_circle, size: 50),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-
-          // TabBar for Group and One-on-One Chats
-          TabBar(
-            onTap: (value) => {
-              setState(() {
-                ones = !ones;
-              })
-            },
-            controller: _tabController,
-            labelColor: Theme.of(context).appBarTheme.titleTextStyle!.color,
-            unselectedLabelColor: Theme.of(context).textTheme.bodyMedium!.color,
-            indicatorColor: Theme.of(context).appBarTheme.titleTextStyle!.color,
-            tabs: const [
-              Tab(text: 'Chats'),
-              Tab(text: 'Groups'),
-            ],
-          ),
-
-          // TabBarView to display GroupChatScreen and OneOnOneChatScreen
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                UsersListScreen(
-                  users: allUsers,
-                  currentUser: userId,
-                ), // Display User List
-                GroupsListScreen(groups: allGroups), // Display Group List
-              ],
-            ),
-          ),
         ],
       ),
     );

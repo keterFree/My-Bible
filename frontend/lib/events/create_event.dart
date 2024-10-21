@@ -257,8 +257,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        // Add any default style properties here
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0), // example padding
+                      ),
                       onPressed: () => _submitForm(context),
-                      child: const Text('Create Event'),
+                      child: const Text('Set Event'),
                     ),
                   ],
                 ),
