@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:frontend/constants.dart';
-import 'package:frontend/lit_Screens/baseScaffold.dart';
+import 'package:frontend/lit_Screens/base_scaffold.dart';
 import 'package:frontend/providers/token_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart'; // Import intl package
@@ -22,14 +22,17 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     'date': '',
     'time': '',
     'venue': '',
-    'keyGuests': [],
+    'keyGuests': <String>[], // Initialize as List<String>
+    'planners': []
   };
 
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
+  final TextEditingController _guestController =
+      TextEditingController(); // Guest input controller
 
-  Future<void> createEvent(
-      BuildContext context, String token, Map<String, dynamic> eventData) async {
+  Future<void> createEvent(BuildContext context, String token,
+      Map<String, dynamic> eventData) async {
     try {
       Response response = await Dio().post(
         ApiConstants.event,
@@ -45,6 +48,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       print('Event created: ${response.data}');
     } catch (e) {
       print('Error creating event: $e');
+      rethrow; // Ensure the error propagates to the caller
     }
   }
 
@@ -52,11 +56,36 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       final token = Provider.of<TokenProvider>(context, listen: false).token;
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return const Center(child: CircularProgressIndicator());
+        },
+      );
+
       try {
         await createEvent(context, token!, _eventData);
-        Navigator.pop(context);
+
+        if (mounted) Navigator.pop(context); // Dismiss loading
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Event created successfully!'),
+          ),
+        );
+
+        if (mounted) Navigator.pop(context); // Navigate back
       } catch (e) {
-        print('Error creating event: $e');
+        if (mounted) Navigator.pop(context); // Dismiss loading
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create event: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
@@ -65,7 +94,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: selectedDate ?? DateTime.now(),
-      firstDate: DateTime(2000),
+      firstDate: DateTime.now(), // Prevent selection of past dates
       lastDate: DateTime(2101),
     );
     if (picked != null && picked != selectedDate) {
@@ -93,6 +122,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     if (guest.isNotEmpty && !_eventData['keyGuests'].contains(guest)) {
       setState(() {
         _eventData['keyGuests'].add(guest);
+        _guestController.clear(); // Clear the input after adding
       });
     }
   }
@@ -161,45 +191,70 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           value!.isEmpty ? 'Please enter a venue' : null,
                     ),
                     const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextButton(
-                            onPressed: () => _selectDate(context),
-                            child: Text(
-                              selectedDate == null
-                                  ? 'Select Date'
-                                  : 'Selected Date: ${DateFormat('yyyy-MM-dd').format(selectedDate!)}',
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextButton(
-                            onPressed: () => _selectTime(context),
-                            child: Text(
-                              selectedTime == null
-                                  ? 'Select Time'
-                                  : 'Selected Time: ${selectedTime!.format(context)}',
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    TextFormField(
+                    TextField(
+                      controller: _guestController,
                       decoration: InputDecoration(
-                        labelText: 'Key Guest',
+                        labelText: 'Add Key Guest',
                         labelStyle: Theme.of(context).textTheme.bodyMedium,
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.add),
+                          onPressed: () {
+                            _addKeyGuest(_guestController.text);
+                          },
+                        ),
                       ),
-                      onFieldSubmitted: (value) {
-                        _addKeyGuest(value);
-                      },
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6.0,
+                      children: _eventData['keyGuests']
+                          .map<Widget>((guest) => Chip(
+                                label: Text(guest),
+                                onDeleted: () {
+                                  setState(() {
+                                    _eventData['keyGuests'].remove(guest);
+                                  });
+                                },
+                              ))
+                          .toList(),
                     ),
                     const SizedBox(height: 16),
-                    Text('Key Guests: ${_eventData['keyGuests'].join(', ')}'),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton(
+                              onPressed: () => _selectDate(context),
+                              child: Text(
+                                selectedDate == null
+                                    ? 'Select Date'
+                                    : 'Selected Date: ${DateFormat('yyyy-MM-dd').format(selectedDate!)}',
+                                style: Theme.of(context).textTheme.bodyLarge,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton(
+                              onPressed: () => _selectTime(context),
+                              child: Text(
+                                selectedTime == null
+                                    ? 'Select Time'
+                                    : 'Selected Time: ${selectedTime!.format(context)}',
+                                style: Theme.of(context).textTheme.bodyLarge,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () => _submitForm(context),

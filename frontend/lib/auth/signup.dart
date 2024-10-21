@@ -150,7 +150,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   decoration: InputDecoration(
                     labelText: 'Name',
                     labelStyle: Theme.of(context).textTheme.bodySmall,
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                   ),
                   validator: (value) =>
                       value == null || value.isEmpty ? 'Enter your name' : null,
@@ -165,7 +165,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     labelStyle: Theme.of(context).textTheme.bodySmall,
                     prefixText: '+254 ',
                     hintText: '7XXXXXXXX',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                   ),
                   validator: (value) {
                     if (value == null ||
@@ -184,7 +184,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   decoration: InputDecoration(
                     labelText: 'Password',
                     labelStyle: Theme.of(context).textTheme.bodySmall,
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                   ),
                   validator: (value) => value == null || value.isEmpty
                       ? 'Enter a password'
@@ -198,7 +198,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   decoration: InputDecoration(
                     labelText: 'Confirm Password',
                     labelStyle: Theme.of(context).textTheme.bodySmall,
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                   ),
                   validator: (value) => value == null || value.isEmpty
                       ? 'Confirm your password'

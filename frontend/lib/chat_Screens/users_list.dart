@@ -134,7 +134,7 @@ class UsersListScreen extends StatelessWidget {
             'Failed to fetch or create direct message: ${response.statusCode} - ${response.data}');
         return null;
       }
-    } on DioError catch (dioError) {
+    } on DioException catch (dioError) {
       if (dioError.response != null) {
         // DioError with server response
         print(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/chat_Screens/createGroup.dart';
+import 'package:frontend/chat_Screens/create_group.dart';
 import 'package:frontend/lit_Screens/account.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/providers/token_provider.dart';
@@ -61,6 +61,7 @@ class BaseScaffold extends StatelessWidget {
           appBar: AppBar(
             iconTheme: Theme.of(context).iconTheme,
             title: Text(title),
+            centerTitle: true,
             actions: [
               PopupMenuButton<String>(
                 onSelected: (value) => _handleMenuItemClick(value, context),

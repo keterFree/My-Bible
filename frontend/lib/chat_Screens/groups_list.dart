@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/chat_Screens/chatScreen.dart';
+import 'package:frontend/chat_Screens/chat_screen.dart';
 
 class GroupsListScreen extends StatelessWidget {
   final List<dynamic> groups;

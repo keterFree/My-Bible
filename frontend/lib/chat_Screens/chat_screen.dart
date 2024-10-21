@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:frontend/chat_Screens/addMembers.dart';
-import 'package:frontend/chat_Screens/groupDetails.dart';
+import 'package:frontend/chat_Screens/add_members.dart';
+import 'package:frontend/chat_Screens/group_details.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:provider/provider.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
@@ -123,7 +123,7 @@ abstract class _BaseMessageScreenState<T extends BaseMessageScreen>
                 ),
                 fillColor: Theme.of(context).cardColor,
                 contentPadding:
-                    EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               ),
             ),
           ),

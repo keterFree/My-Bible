@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/lit_Screens/baseScaffold.dart';
+import 'package:frontend/lit_Screens/base_scaffold.dart';
 import 'package:lottie/lottie.dart';
 
 class ErrorScreen extends StatelessWidget {
