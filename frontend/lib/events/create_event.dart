@@ -137,142 +137,137 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         : Colors.black.withOpacity(0.6);
 
     return BaseScaffold(
+      darkModeColor: Colors.black.withOpacity(0.6),
       title: 'Create Event',
-      body: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(color: background),
-          ),
-          SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Title',
+                    labelStyle: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  onSaved: (value) => _eventData['title'] = value,
+                  validator: (value) =>
+                      value!.isEmpty ? 'Please enter a title' : null,
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Description',
+                    labelStyle: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  onSaved: (value) => _eventData['description'] = value,
+                  validator: (value) =>
+                      value!.isEmpty ? 'Please enter a description' : null,
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Theme',
+                    labelStyle: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  onSaved: (value) => _eventData['theme'] = value,
+                  validator: (value) =>
+                      value!.isEmpty ? 'Please enter a theme' : null,
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Venue',
+                    labelStyle: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  onSaved: (value) => _eventData['venue'] = value,
+                  validator: (value) =>
+                      value!.isEmpty ? 'Please enter a venue' : null,
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _guestController,
+                  decoration: InputDecoration(
+                    labelText: 'Add Key Guest',
+                    labelStyle: Theme.of(context).textTheme.bodyMedium,
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.add),
+                      onPressed: () {
+                        _addKeyGuest(_guestController.text);
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6.0,
+                  children: _eventData['keyGuests']
+                      .map<Widget>((guest) => Chip(
+                            label: Text(guest),
+                            onDeleted: () {
+                              setState(() {
+                                _eventData['keyGuests'].remove(guest);
+                              });
+                            },
+                          ))
+                      .toList(),
+                ),
+                const SizedBox(height: 16),
+                Row(
                   children: [
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Title',
-                        labelStyle: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      onSaved: (value) => _eventData['title'] = value,
-                      validator: (value) =>
-                          value!.isEmpty ? 'Please enter a title' : null,
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Description',
-                        labelStyle: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      onSaved: (value) => _eventData['description'] = value,
-                      validator: (value) =>
-                          value!.isEmpty ? 'Please enter a description' : null,
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Theme',
-                        labelStyle: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      onSaved: (value) => _eventData['theme'] = value,
-                      validator: (value) =>
-                          value!.isEmpty ? 'Please enter a theme' : null,
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Venue',
-                        labelStyle: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      onSaved: (value) => _eventData['venue'] = value,
-                      validator: (value) =>
-                          value!.isEmpty ? 'Please enter a venue' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _guestController,
-                      decoration: InputDecoration(
-                        labelText: 'Add Key Guest',
-                        labelStyle: Theme.of(context).textTheme.bodyMedium,
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.add),
-                          onPressed: () {
-                            _addKeyGuest(_guestController.text);
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 6.0,
-                      children: _eventData['keyGuests']
-                          .map<Widget>((guest) => Chip(
-                                label: Text(guest),
-                                onDeleted: () {
-                                  setState(() {
-                                    _eventData['keyGuests'].remove(guest);
-                                  });
-                                },
-                              ))
-                          .toList(),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: TextButton(
-                              onPressed: () => _selectDate(context),
-                              child: Text(
-                                selectedDate == null
-                                    ? 'Select Date'
-                                    : 'Selected Date: ${DateFormat('yyyy-MM-dd').format(selectedDate!)}',
-                                style: Theme.of(context).textTheme.bodyLarge,
-                              ),
-                            ),
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton(
+                          onPressed: () => _selectDate(context),
+                          child: Text(
+                            selectedDate == null
+                                ? 'Select Date'
+                                : 'Selected Date: ${DateFormat('yyyy-MM-dd').format(selectedDate!)}',
+                            style: Theme.of(context).textTheme.bodyLarge,
                           ),
                         ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: TextButton(
-                              onPressed: () => _selectTime(context),
-                              child: Text(
-                                selectedTime == null
-                                    ? 'Select Time'
-                                    : 'Selected Time: ${selectedTime!.format(context)}',
-                                style: Theme.of(context).textTheme.bodyLarge,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                        // Add any default style properties here
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0), // example padding
                       ),
-                      onPressed: () => _submitForm(context),
-                      child: const Text('Set Event'),
                     ),
                   ],
                 ),
-              ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton(
+                          onPressed: () => _selectTime(context),
+                          child: Text(
+                            selectedTime == null
+                                ? 'Select Time'
+                                : 'Selected Time: ${selectedTime!.format(context)}',
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    // Add any default style properties here
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0), // example padding
+                  ),
+                  onPressed: () => _submitForm(context),
+                  child: const Text('Set Event'),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

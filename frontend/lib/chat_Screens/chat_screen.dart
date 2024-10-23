@@ -317,6 +317,7 @@ class _GroupMessageScreenState
             Brightness.dark;
 
     return BaseScaffold(
+      darkModeColor: Colors.black.withOpacity(0.8),
       title: widget.group['name'],
       appBarActions: [
         PopupMenuButton<String>(
@@ -350,28 +351,18 @@ class _GroupMessageScreenState
           icon: const Icon(Icons.more_vert),
         ),
       ],
-      body: Stack(
+      body: Column(
         children: [
-          Container(
-            decoration: BoxDecoration(
-                color: isDarkMode
-                    ? Colors.black.withOpacity(0.6)
-                    : Colors.black.withOpacity(0.2)),
+          Expanded(
+            child: ListView.builder(
+              itemCount: messages.length,
+              itemBuilder: (context, index) {
+                final message = messages[index];
+                return buildMessageBubble(message);
+              },
+            ),
           ),
-          Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final message = messages[index];
-                    return buildMessageBubble(message);
-                  },
-                ),
-              ),
-              buildMessageInput(),
-            ],
-          ),
+          buildMessageInput(),
         ],
       ),
       floatingActionButton: !isMember

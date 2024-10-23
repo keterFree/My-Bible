@@ -158,114 +158,105 @@ class _ChatHomeScreenState extends State<ChatHomeScreen>
   @override
   Widget build(BuildContext context) {
     return BaseScaffold(
+      darkModeColor: Colors.black.withOpacity(0.6),
       title: "Chats",
-      body: Stack(
-        children: [
-          Container(
-              decoration: BoxDecoration(color: Colors.black.withOpacity(0.2))),
-          _isLoading
-              ? _buildLoadingIndicator() // Show loading indicator
-              : _hasError
-                  ? _buildErrorState() // Show error state
-                  : Column(
-                      children: [
-                        // User Info Section
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: _isLoading
+          ? _buildLoadingIndicator() // Show loading indicator
+          : _hasError
+              ? _buildErrorState() // Show error state
+              : Column(
+                  children: [
+                    // User Info Section
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            ones ? "Groups" : "Members",
+                            style: TextStyle(
+                              color: Theme.of(context)
+                                  .appBarTheme
+                                  .titleTextStyle!
+                                  .color,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              Text(
-                                ones ? "Groups" : "Members",
-                                style: TextStyle(
-                                  color: Theme.of(context)
-                                      .appBarTheme
-                                      .titleTextStyle!
-                                      .color,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        userContacts,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyLarge
-                                            ?.copyWith(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      Text(
-                                        userName,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyLarge
-                                            ?.copyWith(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
+                                  Text(
+                                    userContacts,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge
+                                        ?.copyWith(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                    textAlign: TextAlign.center,
                                   ),
-                                  const Icon(Icons.account_circle, size: 50),
+                                  Text(
+                                    userName,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge
+                                        ?.copyWith(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ],
                               ),
+                              const Icon(Icons.account_circle, size: 50),
                             ],
                           ),
-                        ),
-                        const SizedBox(height: 10),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
 
-                        // TabBar for Group and One-on-One Chats
-                        TabBar(
-                          onTap: (value) => {
-                            setState(() {
-                              ones = !ones;
-                            })
-                          },
-                          controller: _tabController,
-                          labelColor: Theme.of(context)
-                              .appBarTheme
-                              .titleTextStyle!
-                              .color,
-                          unselectedLabelColor:
-                              Theme.of(context).textTheme.bodyMedium!.color,
-                          indicatorColor: Theme.of(context)
-                              .appBarTheme
-                              .titleTextStyle!
-                              .color,
-                          tabs: const [
-                            Tab(text: 'Chats'),
-                            Tab(text: 'Groups'),
-                          ],
-                        ),
-
-                        // TabBarView to display GroupChatScreen and OneOnOneChatScreen
-                        Expanded(
-                          child: TabBarView(
-                            controller: _tabController,
-                            children: [
-                              UsersListScreen(
-                                users: allUsers,
-                                currentUser: userId,
-                              ), // Display User List
-                              GroupsListScreen(
-                                  groups: allGroups), // Display Group List
-                            ],
-                          ),
-                        ),
+                    // TabBar for Group and One-on-One Chats
+                    TabBar(
+                      onTap: (value) => {
+                        setState(() {
+                          ones = !ones;
+                        })
+                      },
+                      controller: _tabController,
+                      labelColor:
+                          Theme.of(context).appBarTheme.titleTextStyle!.color,
+                      unselectedLabelColor:
+                          Theme.of(context).textTheme.bodyMedium!.color,
+                      indicatorColor:
+                          Theme.of(context).appBarTheme.titleTextStyle!.color,
+                      tabs: const [
+                        Tab(text: 'Chats'),
+                        Tab(text: 'Groups'),
                       ],
                     ),
-        ],
-      ),
+
+                    // TabBarView to display GroupChatScreen and OneOnOneChatScreen
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          UsersListScreen(
+                            users: allUsers,
+                            currentUser: userId,
+                          ), // Display User List
+                          GroupsListScreen(
+                              groups: allGroups), // Display Group List
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
     );
   }
 }

@@ -177,6 +177,7 @@ class _AccountScreenState extends State<AccountScreen> {
   @override
   Widget build(BuildContext context) {
     return BaseScaffold(
+      darkModeColor: Colors.black.withOpacity(0.6),
       title: "Account",
       body: Padding(
         padding: const EdgeInsets.all(16.0),

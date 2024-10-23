@@ -159,45 +159,36 @@ class _DirectMessageScreenState extends State<DirectMessageScreen> {
         WidgetsBinding.instance.platformDispatcher.platformBrightness ==
             Brightness.dark;
     return BaseScaffold(
+      darkModeColor: Colors.black.withOpacity(0.8),
       title: widget.user['name'],
-      body: Stack(
+      body: Column(
         children: [
-          Container(
-            decoration: BoxDecoration(
-                color: isDarkMode
-                    ? Colors.black.withOpacity(0.6)
-                    : Colors.black.withOpacity(0.2)),
+          Expanded(
+            child: ListView.builder(
+              itemCount: messages.length,
+              itemBuilder: (context, index) {
+                final message = messages[index];
+                return buildMessageBubble(message);
+              },
+            ),
           ),
-          Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final message = messages[index];
-                    return buildMessageBubble(message);
-                  },
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _messageController,
-                        decoration: InputDecoration(
-                          hintText: 'Type a message...',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _messageController,
+                    decoration: InputDecoration(
+                      hintText: 'Type a message...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

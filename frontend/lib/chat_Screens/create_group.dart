@@ -105,72 +105,66 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
   @override
   Widget build(BuildContext context) {
     return BaseScaffold(
+      darkModeColor: Colors.black.withOpacity(0.6),
       title: 'Create Group',
-      body: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(color: Colors.black.withOpacity(0.4)),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      labelText: 'Group Name',
-                      labelStyle: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a group name';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  TextFormField(
-                    controller: _descriptionController,
-                    decoration: InputDecoration(
-                        labelText: 'Description',
-                        labelStyle: Theme.of(context).textTheme.bodyLarge),
-                    maxLines: 3,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a description';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  SwitchListTile(
-                    inactiveTrackColor: Colors.green,
-                    title: Text(
-                      'Restricted Group',
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                    value: _isRestricted,
-                    onChanged: (value) {
-                      setState(() {
-                        _isRestricted = value;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : ElevatedButton(
-                          onPressed: _createGroup,
-                          child: const Text('Create Group'),
-                        ),
-                ],
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  labelText: 'Group Name',
+                  labelStyle: Theme.of(context).textTheme.bodyLarge,
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a group name';
+                  }
+                  return null;
+                },
               ),
-            ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: _descriptionController,
+                decoration: InputDecoration(
+                    labelText: 'Description',
+                    labelStyle: Theme.of(context).textTheme.bodyLarge),
+                maxLines: 3,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a description';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 10),
+              SwitchListTile(
+                inactiveTrackColor: Colors.green,
+                title: Text(
+                  'Restricted Group',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                value: _isRestricted,
+                onChanged: (value) {
+                  setState(() {
+                    _isRestricted = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 20),
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ElevatedButton(
+                      onPressed: _createGroup,
+                      child: const Text('Create Group'),
+                    ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

@@ -252,122 +252,111 @@ class _ProgramScreenState extends State<ProgramScreen> {
   @override
   Widget build(BuildContext context) {
     return BaseScaffold(
+      darkModeColor: Colors.black.withOpacity(0.6),
       title: "Event Program",
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              color: Color.fromARGB(100, 0, 0, 0), // Background overlay
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Align(
-                  alignment: Alignment.topRight,
-                  child: ElevatedButton(
-                    onPressed: () => _showProgramDialog(),
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      // Add any default style properties here
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0), // example padding
-                    ),
-                    child: const Text("Add Program Item"),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Align(
+              alignment: Alignment.topRight,
+              child: ElevatedButton(
+                onPressed: () => _showProgramDialog(),
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0),
                   ),
+                  // Add any default style properties here
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0), // example padding
                 ),
-                const SizedBox(height: 20),
-                widget.event['program'].isEmpty
-                    ? _buildErrorState()
-                    : Expanded(
-                        child: ListView.builder(
-                          itemCount: programItems.length,
-                          itemBuilder: (context, index) {
-                            final programItem = programItems[index];
-                            print('build:  $programItem\n\n');
-                            return Card(
-                              color: const Color.fromARGB(100, 0, 0, 0),
-                              elevation: 3,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: ListTile(
-                                  leading: SizedBox(
-                                    width: 90, // Fixed width to avoid overflow
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          programItem['startTime'] ?? 'N/A',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyLarge!
-                                              .copyWith(
-                                                fontFamily: 'Roboto',
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                        ),
-                                        // const SizedBox(height: 4),
-                                        Text(
-                                          programItem['endTime'] ?? 'N/A',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyLarge!
-                                              .copyWith(
-                                                fontFamily: 'Roboto',
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  title: Text(
-                                    programItem['description'] ??
-                                        'No Description',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyLarge!
-                                        .copyWith(
-                                          fontFamily: 'Roboto',
-                                          fontWeight: FontWeight.normal,
-                                        ),
-                                  ),
-                                  trailing: IconButton(
-                                    icon: Icon(
-                                      Icons.edit,
-                                      color: Theme.of(context)
+                child: const Text("Add Program Item"),
+              ),
+            ),
+            const SizedBox(height: 20),
+            widget.event['program'].isEmpty
+                ? _buildErrorState()
+                : Expanded(
+                    child: ListView.builder(
+                      itemCount: programItems.length,
+                      itemBuilder: (context, index) {
+                        final programItem = programItems[index];
+                        print('build:  $programItem\n\n');
+                        return Card(
+                          color: const Color.fromARGB(100, 0, 0, 0),
+                          elevation: 3,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: ListTile(
+                              leading: SizedBox(
+                                width: 90, // Fixed width to avoid overflow
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      programItem['startTime'] ?? 'N/A',
+                                      style: Theme.of(context)
                                           .textTheme
                                           .bodyLarge!
-                                          .color,
+                                          .copyWith(
+                                            fontFamily: 'Roboto',
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                     ),
-                                    onPressed: () {
-                                      editingIndex = index;
-                                      setState(() {
-                                        startTime = programItem['startTime'];
-                                        endTime = programItem['endTime'];
-                                        description =
-                                            programItem['description'];
-                                      });
-                                      _showProgramDialog();
-                                    },
-                                  ),
+                                    // const SizedBox(height: 4),
+                                    Text(
+                                      programItem['endTime'] ?? 'N/A',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge!
+                                          .copyWith(
+                                            fontFamily: 'Roboto',
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            );
-                          },
-                        ),
-                      ),
-              ],
-            ),
-          ),
-        ],
+                              title: Text(
+                                programItem['description'] ?? 'No Description',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge!
+                                    .copyWith(
+                                      fontFamily: 'Roboto',
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                              ),
+                              trailing: IconButton(
+                                icon: Icon(
+                                  Icons.edit,
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge!
+                                      .color,
+                                ),
+                                onPressed: () {
+                                  editingIndex = index;
+                                  setState(() {
+                                    startTime = programItem['startTime'];
+                                    endTime = programItem['endTime'];
+                                    description = programItem['description'];
+                                  });
+                                  _showProgramDialog();
+                                },
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+          ],
+        ),
       ),
       // isLoading
       //     ? Center(child: CircularProgressIndicator())

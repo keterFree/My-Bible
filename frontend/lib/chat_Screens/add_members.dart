@@ -112,6 +112,7 @@ class _AddMembersOrLeadersPageState extends State<AddMembersOrLeadersPage> {
   @override
   Widget build(BuildContext context) {
     return BaseScaffold(
+      darkModeColor: Colors.black.withOpacity(0.6),
       title: 'Add Members to ${widget.groupObj["name"]}',
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.end,

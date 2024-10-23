@@ -104,74 +104,70 @@ class _EventListScreenState extends State<EventListScreen> {
         : Colors.black.withOpacity(0.6);
 
     return BaseScaffold(
+      darkModeColor: Colors.black.withOpacity(0.6),
       title: 'Church Events',
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : hasError
               ? _buildErrorState()
-              : Stack(
-                  children: [
-                    Container(decoration: BoxDecoration(color: background)),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
+              : Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12.0),
-                                  ),
-                                  // Add any default style properties here
-                                  padding: const EdgeInsets.all(
-                                      16.0), // example padding
-                                ),
-                                onPressed: () {
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const CreateEventScreen()),
-                                  );
-                                },
-                                child: Text(
-                                  "Set Event",
-                                  style: GoogleFonts.lato(
-                                    textStyle: const TextStyle(),
-                                  ),
-                                ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.0),
                               ),
-                              const SizedBox(width: 10),
-                              ElevatedButton(
-                                onPressed: _showAllEvents,
-                                style: ElevatedButton.styleFrom(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12.0),
-                                  ),
-                                  // Add any default style properties here
-                                  padding: const EdgeInsets.all(
-                                      16.0), // example padding
-                                ),
-                                child: Text(
-                                  "All Events",
-                                  style: GoogleFonts.lato(
-                                    textStyle: const TextStyle(),
-                                  ),
-                                ),
+                              // Add any default style properties here
+                              padding:
+                                  const EdgeInsets.all(16.0), // example padding
+                            ),
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const CreateEventScreen()),
+                              );
+                            },
+                            child: Text(
+                              "Set Event",
+                              style: GoogleFonts.lato(
+                                textStyle: const TextStyle(),
                               ),
-                            ],
+                            ),
                           ),
-                          const SizedBox(height: 10),
-                          _buildCalendar(),
-                          const SizedBox(height: 10),
-                          Expanded(child: _buildEventListForMonth()),
+                          const SizedBox(width: 10),
+                          ElevatedButton(
+                            onPressed: _showAllEvents,
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                              // Add any default style properties here
+                              padding:
+                                  const EdgeInsets.all(16.0), // example padding
+                            ),
+                            child: Text(
+                              "All Events",
+                              style: GoogleFonts.lato(
+                                textStyle: const TextStyle(),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 10),
+                      _buildCalendar(),
+                      const SizedBox(height: 10),
+                      Expanded(child: _buildEventListForMonth()),
+                    ],
+                  ),
                 ),
     );
   }

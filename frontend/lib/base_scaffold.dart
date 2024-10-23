@@ -11,12 +11,16 @@ class BaseScaffold extends StatelessWidget {
   final Widget body;
   final List<Widget>? appBarActions; // Optional actions for the AppBar
   final Widget? floatingActionButton; // Optional floating action button
+  final Color? darkModeColor; // Optional color for dark mode
+  final Color? lightModeColor; // Optional color for light mode
 
   const BaseScaffold({
     required this.title,
     required this.body,
-    this.appBarActions, // Add this optional parameter for appBar actions
-    this.floatingActionButton, // Add this optional parameter for floating action button
+    this.appBarActions,
+    this.floatingActionButton,
+    this.darkModeColor, // Add optional dark mode color
+    this.lightModeColor, // Add optional light mode color
     super.key,
   });
 
@@ -43,6 +47,11 @@ class BaseScaffold extends StatelessWidget {
     bool isDarkMode =
         WidgetsBinding.instance.platformDispatcher.platformBrightness ==
             Brightness.dark;
+
+    // Default colors if not provided
+    Color darkColor = darkModeColor ?? Colors.black.withOpacity(0.2);
+    Color lightColor = lightModeColor ?? Colors.black.withOpacity(0.2);
+
     String backgroundImage = isDarkMode
         ? 'assets/images/groupBackgroundd.jpg'
         : 'assets/images/groupBackgroundl.jpg';
@@ -56,9 +65,7 @@ class BaseScaffold extends StatelessWidget {
               image: AssetImage(backgroundImage),
               fit: BoxFit.cover,
               colorFilter: ColorFilter.mode(
-                isDarkMode
-                    ? Colors.black.withOpacity(0.2)
-                    : Colors.white.withOpacity(0.2),
+                isDarkMode ? darkColor : lightColor,
                 BlendMode.darken,
               ),
             ),
@@ -69,7 +76,7 @@ class BaseScaffold extends StatelessWidget {
           appBar: AppBar(
             iconTheme: Theme.of(context).iconTheme,
             title: Text(title),
-            centerTitle: true,
+            // centerTitle: true,
             actions: appBarActions ??
                 _buildDefaultActions(context), // Use custom actions if provided
           ),

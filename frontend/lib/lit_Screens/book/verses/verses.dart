@@ -115,7 +115,8 @@ class _VersesScreenState extends State<VersesScreen> {
                   borderRadius: BorderRadius.circular(12.0),
                 ),
                 // Add any default style properties here
-                padding: const EdgeInsets.symmetric(horizontal: 16.0), // example padding
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0), // example padding
               ),
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
@@ -265,16 +266,11 @@ class _VersesScreenState extends State<VersesScreen> {
     bool isDarkMode =
         WidgetsBinding.instance.platformDispatcher.platformBrightness ==
             Brightness.dark;
-    Color background = isDarkMode
-        ? Colors.black.withOpacity(0.8)
-        : Colors.black.withOpacity(0.6);
     return BaseScaffold(
+      darkModeColor: Colors.black.withOpacity(0.8),
       title: '${getBookName(widget.bookNo)} $currentChapter',
       body: Stack(
         children: [
-          Container(
-            decoration: BoxDecoration(color: background),
-          ),
           PageView.builder(
             controller: _pageController,
             onPageChanged: (pageIndex) async {
@@ -312,7 +308,9 @@ class _VersesScreenState extends State<VersesScreen> {
                           leading: Text('$verseNumber'),
                           title: Text(text),
                           selected: isSelected,
-                          selectedTileColor: Colors.amber[600],
+                          selectedTileColor:
+                              const Color.fromARGB(255, 255, 255, 255)!
+                                  .withOpacity(0.6),
                           // const Color.fromARGB(88, 255, 240, 107),
                           onTap: () => _toggleVerseSelection(verseNumber),
                         );

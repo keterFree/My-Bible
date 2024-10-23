@@ -127,6 +127,7 @@ class _HighlightsScreenState extends State<HighlightsScreen> {
       });
     }
     return BaseScaffold(
+      darkModeColor: Colors.black.withOpacity(0.6),
       title: "Highlights",
       body: _isLoading
           ? const Center(
