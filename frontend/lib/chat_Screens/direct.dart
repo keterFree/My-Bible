@@ -1,6 +1,7 @@
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
+import 'package:frontend/lit_Screens/base_scaffold.dart';
 import 'package:frontend/providers/token_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -59,11 +60,9 @@ class _DirectMessageScreenState extends State<DirectMessageScreen> {
     socket.on('receiveDirectMessage', (data) {
       print('Message received: $data');
       // Only add the message if it's from another user
-      if (data['sender'] != userId) {
-        setState(() {
-          messages.add(data); // Add new message to the list
-        });
-      }
+      setState(() {
+        messages.add(data); // Add new message to the list
+      });
     });
 
     // Handle disconnection
@@ -89,14 +88,10 @@ class _DirectMessageScreenState extends State<DirectMessageScreen> {
 
     // Clear the message input field
     _messageController.clear();
-
-    // Add the sent message to the list locally
-    setState(() {
-      messages.add(newMessage);
-    });
   }
 
   Widget buildMessageBubble(dynamic message) {
+    print("buildMessageBubble: \n $message");
     bool isCurrentUser = message['sender'] == userId;
     return Align(
       alignment: isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
@@ -163,33 +158,17 @@ class _DirectMessageScreenState extends State<DirectMessageScreen> {
     bool isDarkMode =
         WidgetsBinding.instance.platformDispatcher.platformBrightness ==
             Brightness.dark;
-    String backgroundImage =
-        isDarkMode ? 'assets/images/pdark.jpeg' : 'assets/images/plight.jpg';
-    return Stack(
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-                image: AssetImage(backgroundImage),
-                fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(
-                  isDarkMode
-                      ? Colors.black.withOpacity(0.2)
-                      : Colors.white.withOpacity(0.2),
-                  isDarkMode ? BlendMode.darken : BlendMode.lighten,
-                ),
-                alignment: Alignment.topLeft),
+    return BaseScaffold(
+      title: widget.user['name'],
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+                color: isDarkMode
+                    ? Colors.black.withOpacity(0.6)
+                    : Colors.black.withOpacity(0.2)),
           ),
-        ),
-        Scaffold(
-          backgroundColor:
-              Theme.of(context).scaffoldBackgroundColor.withOpacity(0.3),
-          appBar: AppBar(
-            backgroundColor:
-                Theme.of(context).appBarTheme.backgroundColor!.withOpacity(0.8),
-            title: Text(widget.user['name']),
-          ),
-          body: Column(
+          Column(
             children: [
               Expanded(
                 child: ListView.builder(
@@ -215,21 +194,21 @@ class _DirectMessageScreenState extends State<DirectMessageScreen> {
                         ),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.send),
-                      onPressed: () {
-                        if (_messageController.text.isNotEmpty) {
-                          sendMessage(_messageController.text);
-                        }
-                      },
-                    )
                   ],
                 ),
               ),
             ],
           ),
-        ),
-      ],
+        ],
+      ),
+      floatingActionButton: IconButton(
+        icon: const Icon(Icons.send, color: Colors.white),
+        onPressed: () {
+          if (_messageController.text.isNotEmpty) {
+            sendMessage(_messageController.text);
+          }
+        },
+      ),
     );
   }
 

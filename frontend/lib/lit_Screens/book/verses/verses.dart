@@ -100,13 +100,13 @@ class _VersesScreenState extends State<VersesScreen> {
         return AlertDialog(
           title: Text(
             'Add a Note',
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: Theme.of(context).textTheme.bodySmall,
           ),
           content: TextField(
             controller: noteController,
             decoration: InputDecoration(
                 hintText: "Enter your note here",
-                hintStyle: Theme.of(context).textTheme.bodyMedium),
+                hintStyle: Theme.of(context).textTheme.bodySmall),
           ),
           actions: <Widget>[
             ElevatedButton(

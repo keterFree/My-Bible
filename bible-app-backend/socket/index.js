@@ -1,6 +1,7 @@
 const Message = require('../models/Message');
 const DirectMessage = require('../models/DirectMessage');
 const Group = require('../models/Group');
+const User = require('../models/User'); // Assuming you have a User model
 
 const socketHandler = (io) => {
   io.on('connection', (socket) => {
@@ -37,8 +38,11 @@ const socketHandler = (io) => {
 
         const savedMessage = await newMessage.save();
 
-        // Broadcast to all users in the group
-        io.to(groupId).emit('receiveGroupMessage', savedMessage);
+        // Populate the sender field with the user's name
+        const populatedMessage = await Message.findById(savedMessage._id).populate('sender', 'name');
+
+        // Broadcast to all users in the group with the sender's name
+        io.to(groupId).emit('receiveGroupMessage', populatedMessage);
       } catch (err) {
         console.error('Error sending group message:', err);
         socket.emit('error', { message: 'Failed to send group message.' });
@@ -61,13 +65,16 @@ const socketHandler = (io) => {
         // Update the DirectMessage conversation with the new message
         await DirectMessage.findByIdAndUpdate(directMessageId, {
           $push: { messages: savedMessage._id },
-        }).then(console.log("updated messages list"));
+        }).then(() => console.log('updated messages list'));
+
+        // Populate the sender field with the user's name
+        const populatedMessage = await Message.findById(savedMessage._id);
 
         // Ensure both participants are in the private room identified by `directMessageId`
         socket.join(directMessageId);
 
-        // Broadcast only to users in the specific directMessageId room
-        io.to(directMessageId).emit('receiveDirectMessage', savedMessage);
+        // Broadcast only to users in the specific directMessageId room with the sender's name
+        io.to(directMessageId).emit('receiveDirectMessage', populatedMessage);
       } catch (err) {
         console.error('Error sending direct message:', err);
 

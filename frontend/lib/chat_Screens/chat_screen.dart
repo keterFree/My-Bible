@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:frontend/chat_Screens/add_members.dart';
 import 'package:frontend/chat_Screens/group_details.dart';
+import 'package:frontend/lit_Screens/base_scaffold.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:provider/provider.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
@@ -55,6 +56,7 @@ abstract class _BaseMessageScreenState<T extends BaseMessageScreen>
   void sendMessage(String messageContent);
 
   Widget buildMessageBubble(dynamic message) {
+    print(message.toString());
     bool isCurrentUser = message['sender']["_id"] == userId;
     String senderName =
         isCurrentUser ? 'You' : message['sender']["name"] ?? 'Anonymous';
@@ -248,12 +250,10 @@ class _GroupMessageScreenState
       });
     });
 
-    socket.on('receiveDirectMessage', (data) {
-      if (data['sender'] != userId) {
-        setState(() {
-          messages.add(data);
-        });
-      }
+    socket.on('receiveGroupMessage', (data) {
+      setState(() {
+        messages.add(data);
+      });
     });
 
     socket.onDisconnect((_) => print('Disconnected from server'));
@@ -274,9 +274,9 @@ class _GroupMessageScreenState
         'userId': userId,
       });
 
-      setState(() {
-        messages.add(newMessage);
-      });
+      // setState(() {
+      //   messages.add(newMessage);
+      // });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to send message')),
@@ -315,65 +315,50 @@ class _GroupMessageScreenState
     bool isDarkMode =
         WidgetsBinding.instance.platformDispatcher.platformBrightness ==
             Brightness.dark;
-    String backgroundImage =
-        isDarkMode ? 'assets/images/pdark.jpeg' : 'assets/images/plight.jpg';
 
-    return Stack(
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-                image: AssetImage(backgroundImage),
-                fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(
-                  isDarkMode
-                      ? Colors.black.withOpacity(0.2)
-                      : Colors.white.withOpacity(0.2),
-                  isDarkMode ? BlendMode.darken : BlendMode.lighten,
+    return BaseScaffold(
+      title: widget.group['name'],
+      appBarActions: [
+        PopupMenuButton<String>(
+          onSelected: (value) {
+            if (value == 'addMembers') {
+              onAddMembers();
+            } else if (value == 'requestToJoin') {
+              onRequestToJoin();
+            } else if (value == 'more') {
+              moreOnGroup();
+            }
+          },
+          itemBuilder: (context) {
+            return <PopupMenuEntry<String>>[
+              if (isLeader)
+                const PopupMenuItem<String>(
+                  value: 'addMembers',
+                  child: Text('Add Members'),
                 ),
-                alignment: Alignment.topLeft),
-          ),
-        ),
-        Scaffold(
-          backgroundColor:
-              Theme.of(context).scaffoldBackgroundColor.withOpacity(0.3),
-          appBar: AppBar(
-            backgroundColor: Theme.of(context).appBarTheme.backgroundColor!.withOpacity(0.8),
-            title: Text(widget.group['name']),
-            actions: [
-              PopupMenuButton<String>(
-                onSelected: (value) {
-                  if (value == 'addMembers') {
-                    onAddMembers();
-                  } else if (value == 'requestToJoin') {
-                    onRequestToJoin();
-                  } else if (value == 'more') {
-                    moreOnGroup();
-                  }
-                },
-                itemBuilder: (context) {
-                  return <PopupMenuEntry<String>>[
-                    if (isLeader)
-                      const PopupMenuItem<String>(
-                        value: 'addMembers',
-                        child: Text('Add Members'),
-                      ),
-                    if (!isMember)
-                      const PopupMenuItem<String>(
-                        value: 'requestToJoin',
-                        child: Text('Request to Join Group'),
-                      ),
-                    const PopupMenuItem<String>(
-                      value: 'more',
-                      child: Text('Group details'),
-                    ),
-                  ];
-                },
-                icon: const Icon(Icons.more_vert),
+              if (!isMember)
+                const PopupMenuItem<String>(
+                  value: 'requestToJoin',
+                  child: Text('Request to Join Group'),
+                ),
+              const PopupMenuItem<String>(
+                value: 'more',
+                child: Text('Group details'),
               ),
-            ],
+            ];
+          },
+          icon: const Icon(Icons.more_vert),
+        ),
+      ],
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+                color: isDarkMode
+                    ? Colors.black.withOpacity(0.6)
+                    : Colors.black.withOpacity(0.2)),
           ),
-          body: Column(
+          Column(
             children: [
               Expanded(
                 child: ListView.builder(
@@ -387,18 +372,18 @@ class _GroupMessageScreenState
               buildMessageInput(),
             ],
           ),
-          floatingActionButton: !isMember
-              ? FloatingActionButton(
-                  onPressed: () {
-                    if (isLeader) onAddMembers();
-                    if (!isMember) onRequestToJoin();
-                  },
-                  backgroundColor: Theme.of(context).colorScheme.secondary,
-                  child: const Icon(Icons.group_add_sharp),
-                )
-              : const SizedBox(),
-        ),
-      ],
+        ],
+      ),
+      floatingActionButton: !isMember
+          ? FloatingActionButton(
+              onPressed: () {
+                if (isLeader) onAddMembers();
+                if (!isMember) onRequestToJoin();
+              },
+              backgroundColor: Theme.of(context).colorScheme.secondary,
+              child: const Icon(Icons.group_add_sharp),
+            )
+          : const SizedBox(),
     );
   }
 }

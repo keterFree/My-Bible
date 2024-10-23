@@ -9,8 +9,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 class BaseScaffold extends StatelessWidget {
   final String title;
   final Widget body;
+  final List<Widget>? appBarActions; // Optional actions for the AppBar
+  final Widget? floatingActionButton; // Optional floating action button
 
-  const BaseScaffold({required this.title, required this.body, super.key});
+  const BaseScaffold({
+    required this.title,
+    required this.body,
+    this.appBarActions, // Add this optional parameter for appBar actions
+    this.floatingActionButton, // Add this optional parameter for floating action button
+    super.key,
+  });
 
   // Handle menu item selection
   void _handleMenuItemClick(String value, BuildContext context) {
@@ -62,38 +70,8 @@ class BaseScaffold extends StatelessWidget {
             iconTheme: Theme.of(context).iconTheme,
             title: Text(title),
             centerTitle: true,
-            actions: [
-              PopupMenuButton<String>(
-                onSelected: (value) => _handleMenuItemClick(value, context),
-                itemBuilder: (BuildContext context) {
-                  return {'Create Group', 'View Account Details'}
-                      .map((String choice) {
-                    return PopupMenuItem<String>(
-                      value: choice,
-                      child: Text(choice),
-                    );
-                  }).toList();
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.logout, color: Colors.white),
-                onPressed: () async {
-                  final confirmation = await showConfirmationDialog(context);
-                  if (confirmation) {
-                    final prefs = await SharedPreferences.getInstance();
-                    await prefs.remove('auth_token');
-                    Provider.of<TokenProvider>(context, listen: false)
-                        .setToken("");
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const LoginScreen()),
-                      (Route<dynamic> route) => false,
-                    );
-                  }
-                },
-              ),
-            ],
+            actions: appBarActions ??
+                _buildDefaultActions(context), // Use custom actions if provided
           ),
           body: body,
           bottomNavigationBar: BottomAppBar(
@@ -113,17 +91,57 @@ class BaseScaffold extends StatelessWidget {
               ],
             ),
           ),
-          floatingActionButton: FloatingActionButton(
-            backgroundColor: isDarkMode
-                ? Colors.white.withOpacity(0.9)
-                : Theme.of(context).colorScheme.secondary,
-            foregroundColor: Theme.of(context).scaffoldBackgroundColor,
-            onPressed: () => Navigator.pushNamed(context, '/homeChat'),
-            tooltip: 'Chat',
-            child: const Icon(Icons.chat),
-          ),
+          floatingActionButton: floatingActionButton ??
+              _buildDefaultFAB(
+                  context, isDarkMode), // Use custom FAB if provided
         ),
       ],
+    );
+  }
+
+  // Build the default actions if none are provided
+  List<Widget> _buildDefaultActions(BuildContext context) {
+    return [
+      PopupMenuButton<String>(
+        onSelected: (value) => _handleMenuItemClick(value, context),
+        itemBuilder: (BuildContext context) {
+          return {'Create Group', 'View Account Details'}.map((String choice) {
+            return PopupMenuItem<String>(
+              value: choice,
+              child: Text(choice),
+            );
+          }).toList();
+        },
+      ),
+      IconButton(
+        icon: const Icon(Icons.logout, color: Colors.white),
+        onPressed: () async {
+          final confirmation = await showConfirmationDialog(context);
+          if (confirmation) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.remove('auth_token');
+            Provider.of<TokenProvider>(context, listen: false).setToken("");
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+              (Route<dynamic> route) => false,
+            );
+          }
+        },
+      ),
+    ];
+  }
+
+  // Build the default floating action button
+  FloatingActionButton _buildDefaultFAB(BuildContext context, bool isDarkMode) {
+    return FloatingActionButton(
+      backgroundColor: isDarkMode
+          ? Colors.white.withOpacity(0.9)
+          : Theme.of(context).colorScheme.secondary,
+      foregroundColor: Theme.of(context).scaffoldBackgroundColor,
+      onPressed: () => Navigator.pushNamed(context, '/homeChat'),
+      tooltip: 'Chat',
+      child: const Icon(Icons.chat),
     );
   }
 
