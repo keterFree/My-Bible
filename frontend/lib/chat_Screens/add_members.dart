@@ -1,7 +1,7 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
+import 'package:frontend/lit_Screens/base_scaffold.dart';
 import 'package:frontend/providers/token_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
@@ -35,12 +35,9 @@ class _AddMembersOrLeadersPageState extends State<AddMembersOrLeadersPage> {
 
     try {
       var url = Uri.parse(ApiConstants.user);
-      // print(token);
       final response =
           await http.get(url, headers: {'Authorization': 'Bearer $token'});
-      print(response);
       if (response.statusCode == 200) {
-        print(json.decode(response.body).length);
         setState(() {
           allUsers = json.decode(response.body);
           filteredUsers = allUsers;
@@ -75,6 +72,8 @@ class _AddMembersOrLeadersPageState extends State<AddMembersOrLeadersPage> {
       } else {
         if (selectedMembers.contains(userId)) {
           selectedMembers.remove(userId);
+          selectedLeaders
+              .remove(userId); // Remove from leaders if deselected as member
         } else {
           selectedMembers.add(userId);
         }
@@ -83,7 +82,6 @@ class _AddMembersOrLeadersPageState extends State<AddMembersOrLeadersPage> {
   }
 
   Future<void> addMembersOrLeaders() async {
-    print("Adding members");
     final token = Provider.of<TokenProvider>(context, listen: false).token;
     if (token == null) return;
 
@@ -113,27 +111,55 @@ class _AddMembersOrLeadersPageState extends State<AddMembersOrLeadersPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Add Members to ${widget.groupObj["name"]}'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.group_add), // Changed icon to "group add"
+    return BaseScaffold(
+      title: 'Add Members to ${widget.groupObj["name"]}',
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          ElevatedButton(
+            child: const Icon(Icons.group_add),
             onPressed: () => addMembersOrLeaders(),
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Search bar
           Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              onChanged: _filterUsers,
-              decoration: const InputDecoration(
-                labelText: 'Search by name or phone',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white, // Background color for the search bar
+                borderRadius: BorderRadius.circular(30.0), // Rounded corners
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1), // Subtle shadow
+                    blurRadius: 6.0, // Shadow spread
+                    offset: const Offset(0, 3), // Shadow position
+                  ),
+                ],
+              ),
+              child: TextField(
+                onChanged: _filterUsers,
+                decoration: InputDecoration(
+                  hintText: 'Search by name or phone',
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade400, // Lighter hint text color
+                    fontStyle: FontStyle.italic, // Italic hint text for style
+                  ),
+                  border: InputBorder.none, // Remove the outline border
+                  contentPadding: const EdgeInsets.symmetric(vertical: 15.0),
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: Colors.grey.shade600, // Custom color for the icon
+                  ),
+                  suffixIcon: IconButton(
+                    icon: Icon(Icons.clear, color: Colors.grey.shade600),
+                    onPressed: () {
+                      // Clear the search field
+                      setState(() {
+                        searchQuery = "";
+                        filteredUsers = allUsers;
+                      });
+                    },
+                  ), // Optional clear button
+                ),
               ),
             ),
           ),
@@ -143,35 +169,12 @@ class _AddMembersOrLeadersPageState extends State<AddMembersOrLeadersPage> {
             padding:
                 const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text(
-                  'Add as ',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontStyle: FontStyle.italic,
-                      color: Theme.of(context).textTheme.headlineLarge!.color),
-                ),
-                Row(
-                  children: [
-                    Text(
-                      'Member',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontStyle: FontStyle.italic,
-                          color:
-                              Theme.of(context).textTheme.headlineLarge!.color),
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      'Leader',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontStyle: FontStyle.italic,
-                          color:
-                              Theme.of(context).textTheme.headlineLarge!.color),
-                    ),
-                  ],
+                  'Add as Leader (Optional)',
+                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                      fontWeight: FontWeight.bold, fontStyle: FontStyle.italic),
                 ),
               ],
             ),
@@ -183,57 +186,49 @@ class _AddMembersOrLeadersPageState extends State<AddMembersOrLeadersPage> {
               itemCount: filteredUsers.length,
               itemBuilder: (context, index) {
                 final user = filteredUsers[index];
+                final isSelectedMember = selectedMembers.contains(user['_id']);
+                final isSelectedLeader = selectedLeaders.contains(user['_id']);
+
                 return ListTile(
+                  onTap: () {
+                    _onUserSelected(
+                        user['_id'], false); // Add or remove as member
+                  },
                   title: Text(
                     user['name'],
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold), // Bold for name
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyLarge!
+                        .copyWith(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(
                     user['phone'],
-                    style: const TextStyle(
-                        fontSize: 12.0), // Smaller font for phone
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyLarge!
+                        .copyWith(fontSize: 12.0),
                   ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Column(
-                        children: [
-                          // Checkbox for adding as member
-                          Checkbox(
-                            value: selectedMembers.contains(user['_id']),
-                            onChanged: (value) {
-                              _onUserSelected(user['_id'], false);
-                            },
-                            activeColor: Theme.of(context)
-                                .colorScheme
-                                .secondary, // Custom color for WhatsApp-like style
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4.0),
+                  trailing: isSelectedMember
+                      ? Column(
+                          children: [
+                            Checkbox(
+                              value: isSelectedLeader,
+                              onChanged: (value) {
+                                _onUserSelected(user['_id'],
+                                    true); // Add or remove as leader
+                              },
+                              activeColor: Colors.green,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4.0),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                          width: 16), // Space between the two columns
-                      Column(
-                        children: [
-                          // Checkbox for adding as leader
-                          Checkbox(
-                            value: selectedLeaders.contains(user['_id']),
-                            onChanged: (value) {
-                              _onUserSelected(user['_id'], true);
-                            },
-                            activeColor: Colors
-                                .green, // Use green to differentiate leader role
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4.0),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                          ],
+                        )
+                      : null,
+                  selected:
+                      isSelectedMember, // Show visual feedback when selected
+                  selectedTileColor: Colors.green.withOpacity(
+                      0.6), // Slight background color when selected
                 );
               },
             ),
