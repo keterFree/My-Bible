@@ -155,9 +155,9 @@ class _DirectMessageScreenState extends State<DirectMessageScreen> {
     } catch (e) {
       print('Error decoding token: $e');
     }
-    bool isDarkMode =
-        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
-            Brightness.dark;
+    // bool isDarkMode =
+    //     WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+    //         Brightness.dark;
     return BaseScaffold(
       darkModeColor: Colors.black.withOpacity(0.8),
       title: widget.user['name'],

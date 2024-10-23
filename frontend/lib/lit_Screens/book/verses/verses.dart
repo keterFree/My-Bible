@@ -309,7 +309,7 @@ class _VersesScreenState extends State<VersesScreen> {
                           title: Text(text),
                           selected: isSelected,
                           selectedTileColor:
-                              const Color.fromARGB(255, 255, 255, 255)!
+                              const Color.fromARGB(255, 255, 255, 255)
                                   .withOpacity(0.6),
                           // const Color.fromARGB(88, 255, 240, 107),
                           onTap: () => _toggleVerseSelection(verseNumber),

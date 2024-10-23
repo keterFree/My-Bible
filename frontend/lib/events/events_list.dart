@@ -96,12 +96,9 @@ class _EventListScreenState extends State<EventListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    bool isDarkMode =
-        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
-            Brightness.dark;
-    Color background = isDarkMode
-        ? Colors.black.withOpacity(0.8)
-        : Colors.black.withOpacity(0.6);
+    // bool isDarkMode =
+    //     WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+    //         Brightness.dark;
 
     return BaseScaffold(
       darkModeColor: Colors.black.withOpacity(0.6),

@@ -22,9 +22,9 @@ class _BooksScreenState extends State<BooksScreen> {
 
   @override
   Widget build(BuildContext context) {
-    bool isDarkMode =
-        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
-            Brightness.dark;
+    // bool isDarkMode =
+    //     WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+    //         Brightness.dark;
     return BaseScaffold(
       darkModeColor: Colors.black.withOpacity(0.8),
       title: 'Books',
