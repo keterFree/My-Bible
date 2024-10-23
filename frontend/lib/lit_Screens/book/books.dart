@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants.dart';
-import 'package:frontend/lit_Screens/base_scaffold.dart';
+import 'package:frontend/base_scaffold.dart';
 import 'package:frontend/lit_Screens/book/chapters.dart'; // Screen for displaying chapters
 import 'package:frontend/db_helper.dart'; // Database function location
 

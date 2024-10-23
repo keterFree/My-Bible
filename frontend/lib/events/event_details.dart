@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/events/program.dart';
-import 'package:frontend/lit_Screens/base_scaffold.dart';
+import 'package:frontend/base_scaffold.dart';
 import 'package:intl/intl.dart';
 
 class EventDetailScreen extends StatelessWidget {

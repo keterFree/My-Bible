@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/events/event_details.dart';
-import 'package:frontend/lit_Screens/base_scaffold.dart';
+import 'package:frontend/base_scaffold.dart';
 import 'package:intl/intl.dart'; // Import for formatting dates
 
 class AllEventsScreen extends StatelessWidget {

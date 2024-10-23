@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:frontend/chat_Screens/add_members.dart';
 import 'package:frontend/chat_Screens/group_details.dart';
-import 'package:frontend/lit_Screens/base_scaffold.dart';
+import 'package:frontend/base_scaffold.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:provider/provider.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';

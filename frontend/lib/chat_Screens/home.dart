@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/chat_Screens/groups_list.dart';
 import 'package:frontend/chat_Screens/users_list.dart';
 import 'package:frontend/constants.dart';
-import 'package:frontend/lit_Screens/base_scaffold.dart';
+import 'package:frontend/base_scaffold.dart';
 import 'package:frontend/providers/token_provider.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:http/http.dart' as http;

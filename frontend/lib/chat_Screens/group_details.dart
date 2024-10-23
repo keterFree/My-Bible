@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/lit_Screens/base_scaffold.dart';
+import 'package:frontend/base_scaffold.dart';
 
 class MoreOnGroup extends StatelessWidget {
   final dynamic groupObj;

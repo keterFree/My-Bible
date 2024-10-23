@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:frontend/constants.dart';
-import 'package:frontend/lit_Screens/base_scaffold.dart';
+import 'package:frontend/base_scaffold.dart';
 import 'package:frontend/providers/token_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart'; // Import intl package

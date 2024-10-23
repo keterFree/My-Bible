@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:frontend/lit_Screens/base_scaffold.dart';
+import 'package:frontend/base_scaffold.dart';
 import 'package:provider/provider.dart';
 import '../providers/token_provider.dart';
 import '../constants.dart'; // Ensure ApiConstants.group is defined
