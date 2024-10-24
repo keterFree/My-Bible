@@ -37,6 +37,18 @@ exports.getDevotionById = async (req, res) => {
     }
 };
 
+// Get all devotions
+exports.getAllDevotions = async (req, res) => {
+    try {
+        const devotions = await Devotion.find({})
+            .populate('scriptures') // Populate scripture details
+            .populate('service'); // Optionally populate service details
+        res.status(200).json(devotions);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 // Update a devotion
 exports.updateDevotion = async (req, res) => {
     try {

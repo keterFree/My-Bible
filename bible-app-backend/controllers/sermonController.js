@@ -38,6 +38,18 @@ exports.getSermonById = async (req, res) => {
     }
 };
 
+// Get all sermons
+exports.getAllSermons = async (req, res) => {
+    try {
+        const sermons = await Sermon.find({})
+            .populate('scriptures') // Populate scripture details
+            .populate('service'); // Optionally populate service details
+        res.status(200).json(sermons);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 // Update a sermon
 exports.updateSermon = async (req, res) => {
     try {

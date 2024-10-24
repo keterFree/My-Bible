@@ -6,6 +6,8 @@ const path = require('path');
 const { Server } = require('socket.io');
 const connectDB = require('./config/db');
 const socketHandler = require('./socket');
+const morgan = require('morgan');
+const helmet = require('helmet');
 
 // Initialize environment variables
 dotenv.config();
@@ -19,6 +21,8 @@ const io = new Server(server);
 
 // Use middleware
 app.use(cors());
+app.use(helmet());
+app.use(morgan('dev'));
 app.use(express.json());
 
 // Define routes
@@ -35,13 +39,20 @@ app.use('/api/devotions', require('./routes/devotions'));
 app.use('/api/scriptures', require('./routes/scriptures'));
 app.use('/api/images', require('./routes/images'));
 
-
-
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Handle socket connections
 socketHandler(io);
+
+// Centralized error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(err.status || 500).json({
+        message: err.message || 'Internal Server Error',
+        status: err.status || 500
+    });
+});
 
 // Start the server
 const PORT = process.env.PORT || 5000;

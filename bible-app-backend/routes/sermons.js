@@ -1,20 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const sermonController = require('../controllers/sermonController');
+const {
+    createSermon,
+    getSermonById,
+    getAllSermons,
+    updateSermon,
+    deleteSermon
+} = require('../controllers/sermonController'); // Ensure this path is correct
 
-// Create a new sermon
-router.post('/', sermonController.createSermon);
-
-// Get a single sermon by ID
-router.get('/:id', sermonController.getSermonById);
-
-// Get all sermons
-router.get('/', sermonController.getAllSermons);
-
-// Update a sermon by ID
-router.put('/:id', sermonController.updateSermon);
-
-// Delete a sermon by ID
-router.delete('/:id', sermonController.deleteSermon);
+// Define routes
+router.post('/', createSermon);
+router.get('/:id', getSermonById);
+router.get('/', getAllSermons);
+router.put('/:id', updateSermon);
+router.delete('/:id', deleteSermon);
 
 module.exports = router;
