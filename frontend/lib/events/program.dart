@@ -203,7 +203,7 @@ class _ProgramScreenState extends State<ProgramScreen> {
                 const SizedBox(height: 10),
                 TextFormField(
                   initialValue: description,
-                  decoration: InputDecoration(labelText: "Description"),
+                  decoration: const InputDecoration(labelText: "Description"),
                   onSaved: (value) => description = value,
                   validator: (value) => value == null || value.isEmpty
                       ? 'Please enter a description'

@@ -1,4 +1,3 @@
-Here’s the translation of the song into Swahili:
 
 ---
 
@@ -42,19 +41,18 @@ Na naweza kusema, si kwa njia ya aibu
 Oh hapana, oh hapana, si mimi  
 Nilifanya kwa njia yangu  
 
-Kwa maana mwana ni nani, ana nini?  
+Kwa maana mwanaume ni nani, ana nini?  
 Ikiwa si yeye mwenyewe, basi hana chochote  
 Kusema mambo anayohisi kwa dhati  
-Na si maneno ya yule anayeinama  
-Rekodi inaonyesha nilipata vipigo  
+Na si maneno ya yule mateka  
+Rekodi inaonyesha nilistahimili vipigo  
 Na nilifanya kwa njia yangu  
 
 Ndio, ilikuwa njia yangu  
 
---- 
+---
 
 If you need any adjustments or additional translations, feel free to ask!
-
 
 Here’s the translation of the song into Swahili:
 

@@ -19,14 +19,12 @@ class HighlightsScreen extends StatefulWidget {
 class _HighlightsScreenState extends State<HighlightsScreen> {
   List<Map<String, dynamic>> _highlights = [];
   bool first = false;
-  bool _isLoading = true; // Loading state
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    setState(() {
-      first = true;
-    });
+    setState(() => first = true);
   }
 
   String getBookName(int bookNumber) {
@@ -34,60 +32,78 @@ class _HighlightsScreenState extends State<HighlightsScreen> {
     return books[bookNumber];
   }
 
+  /// Fetch all verses for a scripture entry (handles multiple verse numbers).
+  Future<String> fetchVerses(
+      int bookNo, int chapter, List<int> verseNumbers) async {
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, 'bibledb.db');
+    final db = await openDatabase(path);
+
+    final placeholders = List.filled(verseNumbers.length, '?').join(',');
+    final result = await db.rawQuery(
+      'SELECT verse FROM bible WHERE Book = ? AND Chapter = ? AND VerseCount IN ($placeholders)',
+      [bookNo, chapter, ...verseNumbers],
+    );
+    String verses = '';
+
+    // Loop through the verse numbers and corresponding results
+    for (int i = 0; i < verseNumbers.length; i++) {
+      final verseNumber = verseNumbers[i];
+      final verseText = result[i]['verse'].toString(); // Get the verse text
+      verses +=
+          '$verseNumber   "$verseText"\n'; // Prepend verse number and add a newline
+    }
+
+    return verses.trim();
+  }
+
   Future<void> fetchHighlights(BuildContext context) async {
     try {
       final token = Provider.of<TokenProvider>(context, listen: false).token;
       var url = Uri.parse(ApiConstants.highlightsEndpoint);
 
-      setState(() {
-        _isLoading = true; // Show loading indicator
-      });
+      setState(() => _isLoading = true);
 
       final response = await http.get(
         url,
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
+        headers: {'Authorization': 'Bearer $token'},
       );
 
       if (response.statusCode == 200) {
         List<dynamic> highlightsData = json.decode(response.body);
+        // print(highlightsData);
         List<Map<String, dynamic>> highlightsWithVerses = [];
 
         for (var highlight in highlightsData) {
-          final verseData = await fetchVerse(
-              highlight['book'], highlight['chapter'], highlight['verse']);
+          String combinedVerses = '';
+
+          // Fetch all scripture entries for the highlight.
+          for (var scripture in highlight['scripture']) {
+            int book = scripture['book'];
+            int chapter = scripture['chapter'];
+            List<int> verseNumbers = List<int>.from(scripture['verseNumbers']);
+
+            // Fetch and concatenate the verses.
+            String verses = await fetchVerses(book, chapter, verseNumbers);
+            combinedVerses +=
+                '${getBookName(book)} $chapter:${verseNumbers.join(", ")}\n$verses\n\n';
+          }
+
           highlightsWithVerses.add({
             'highlight': highlight as Map<String, dynamic>,
-            'verseText': verseData['verse'],
+            'verseText': combinedVerses.trim(),
           });
         }
 
-        setState(() {
-          _highlights = highlightsWithVerses;
-        });
+        setState(() => _highlights = highlightsWithVerses);
       } else {
         print('Failed to load highlights');
       }
     } catch (e) {
       print('Error: $e');
     } finally {
-      setState(() {
-        _isLoading = false; // Hide loading indicator
-      });
+      setState(() => _isLoading = false);
     }
-  }
-
-  Future<Map<String, dynamic>> fetchVerse(
-      int bookNo, int chapter, int verse) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'bibledb.db');
-    final db = await openDatabase(path);
-    final verses = await db.rawQuery(
-      'SELECT Versecount, verse FROM bible WHERE Book = ? AND Chapter = ? AND VerseCount = ?',
-      [bookNo, chapter, verse],
-    );
-    return verses.isNotEmpty ? verses.first : {};
   }
 
   Color _getColorFromName(String colorName) {
@@ -122,19 +138,16 @@ class _HighlightsScreenState extends State<HighlightsScreen> {
   Widget build(BuildContext context) {
     if (first) {
       fetchHighlights(context);
-      setState(() {
-        first = false;
-      });
+      setState(() => first = false);
     }
+
     return BaseScaffold(
       darkModeColor: Colors.black.withOpacity(0.6),
       title: "Highlights",
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(), // Show loading indicator
-            )
+          ? const Center(child: CircularProgressIndicator())
           : _highlights.isEmpty
-              ? Center(child: _buildErrorState())
+              ? _buildErrorState()
               : ListView.builder(
                   itemCount: _highlights.length,
                   itemBuilder: (context, index) {
@@ -151,7 +164,7 @@ class _HighlightsScreenState extends State<HighlightsScreen> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
-                        '${getBookName(highlight['book'])} ${highlight['chapter']}: ${highlight['verse']}\n\n$verseText',
+                        verseText,
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                     );

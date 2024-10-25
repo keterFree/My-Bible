@@ -5,10 +5,13 @@ exports.createScripture = async (req, res) => {
     try {
         const { book, chapter, verseNumbers } = req.body;
 
+        // Sort the verseNumbers array in descending order
+        const sortedVerseNumbers = verseNumbers.sort((a, b) => b - a);
+
         const scripture = new Scripture({
             book,
             chapter,
-            verseNumbers
+            verseNumbers: sortedVerseNumbers // Use the sorted array
         });
 
         await scripture.save();

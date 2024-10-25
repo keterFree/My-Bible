@@ -62,31 +62,34 @@ class _VersesScreenState extends State<VersesScreen> {
     });
   }
 
-  Future<void> _bookmarkSelectedVerses(token, String note, context) async {
-    for (int verse in selectedVerses) {
-      var url = Uri.parse(ApiConstants.bookMarkEndpoint);
+  Future<void> _bookmarkSelectedVerses(
+      String token, String note, BuildContext context) async {
+    var url = Uri.parse(ApiConstants.bookMarkEndpoint);
 
+    try {
       final response = await post(
         url,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization':
-              'Bearer $token', // Include token in Authorization header
+          'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
           'book': widget.bookNo,
           'chapter': currentChapter,
-          'verse': verse,
-          'note': note, // Pass the note from the user
+          'verseNumbers': selectedVerses.toList(), // Convert Set to List
+          'note': note, // Include the user’s note
         }),
       );
 
       if (response.statusCode == 200 && mounted) {
-        _logger.i('Verse $verse bookmarked successfully');
+        _logger.i('Verses bookmarked successfully');
       } else if (mounted) {
-        _logger.e('Failed to bookmarked verse $verse');
+        _logger.e('Failed to bookmark verses');
       }
+    } catch (e) {
+      _logger.e('Error: $e');
     }
+
     selectedVerses.clear();
     setState(() {}); // Update UI
   }
@@ -224,15 +227,15 @@ class _VersesScreenState extends State<VersesScreen> {
   }
 
   Future<void> _highlightSelectedVerses(
-      token, String color, BuildContext context) async {
-    if (isLoading) return;
+      String token, String color, BuildContext context) async {
+    if (isLoading) return; // Prevent multiple simultaneous requests
     setState(() {
       isLoading = true;
     });
 
-    for (int verse in selectedVerses) {
-      var url = Uri.parse(ApiConstants.highlightsEndpoint);
+    var url = Uri.parse(ApiConstants.highlightsEndpoint);
 
+    try {
       final response = await post(
         url,
         headers: {
@@ -242,17 +245,20 @@ class _VersesScreenState extends State<VersesScreen> {
         body: jsonEncode({
           'book': widget.bookNo,
           'chapter': currentChapter,
-          'verse': verse,
+          'verseNumbers': selectedVerses.toList(), // Send verses as an array
           'color': color, // Use the chosen color
         }),
       );
 
       if (response.statusCode == 200 && mounted) {
-        _logger.i('Verse $verse highlighted successfully');
+        _logger.i('Verses highlighted successfully');
       } else if (mounted) {
-        _logger.e('Failed to highlight verse $verse');
+        _logger.e('Failed to highlight verses');
       }
+    } catch (e) {
+      _logger.e('Error: $e');
     }
+
     selectedVerses.clear();
     setState(() {
       isLoading = false;

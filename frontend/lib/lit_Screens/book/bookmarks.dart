@@ -39,9 +39,8 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
     try {
       final token = Provider.of<TokenProvider>(context, listen: false).token;
       var url = Uri.parse(ApiConstants.bookMarkEndpoint);
-      setState(() {
-        _isLoading = true; // Show loading indicator
-      });
+      setState(() => _isLoading = true);
+
       final response = await http.get(
         url,
         headers: {
@@ -52,57 +51,81 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
       if (response.statusCode == 200) {
         List bookmarksData = json.decode(response.body);
 
-        // Wait for all async operations to complete
         for (var bookmark in bookmarksData) {
-          bookmark['text'] = await fetchVerse(
-              bookmark['book'], bookmark['chapter'], bookmark['verse']);
-        }
+          List scriptures = bookmark['scripture'];
+          String fullText = '';
 
-        // OR (alternative) using Future.forEach
-        // await Future.forEach(bookmarksData, (bookmark) async {
-        //   bookmark['text'] = await fetchVerse(
-        //       bookmark['book'], bookmark['chapter'], bookmark['verse']);
-        // });
+          // Fetch all verses for each scripture entry
+          for (var scripture in scriptures) {
+            int book = scripture['book'];
+            int chapter = scripture['chapter'];
+            List<int> verseNumbers = List<int>.from(scripture['verseNumbers']);
+
+            // Append fetched verses to fullText
+            String verses = await fetchVerses(book, chapter, verseNumbers);
+            fullText +=
+                '${getBookName(book)} $chapter:${verseNumbers.join(", ")}\n$verses\n\n';
+          }
+
+          // Store the combined text in the bookmark
+          bookmark['text'] = fullText.trim();
+        }
 
         var groupedData =
             groupBy(bookmarksData, (bookmark) => bookmark['note']);
 
         groupedData.forEach((note, bookmarks) {
           bookmarks.sort((a, b) {
-            if (a['book'] != b['book']) {
-              return a['book'].compareTo(b['book']);
-            } else if (a['chapter'] != b['chapter']) {
-              return a['chapter'].compareTo(b['chapter']);
+            if (a['scripture'][0]['book'] != b['scripture'][0]['book']) {
+              return a['scripture'][0]['book']
+                  .compareTo(b['scripture'][0]['book']);
+            } else if (a['scripture'][0]['chapter'] !=
+                b['scripture'][0]['chapter']) {
+              return a['scripture'][0]['chapter']
+                  .compareTo(b['scripture'][0]['chapter']);
             } else {
-              return a['verse'].compareTo(b['verse']);
+              return a['scripture'][0]['verseNumbers'][0]
+                  .compareTo(b['scripture'][0]['verseNumbers'][0]);
             }
           });
         });
 
-        setState(() {
-          _groupedBookmarks = groupedData;
-        });
+        setState(() => _groupedBookmarks = groupedData);
       } else {
         print('Failed to load bookmarks');
       }
     } catch (e) {
       print('Error: $e');
     } finally {
-      setState(() {
-        _isLoading = false; // Hide loading indicator
-      });
+      setState(() => _isLoading = false);
     }
   }
 
-  Future<String> fetchVerse(int bookNo, int chapter, int verse) async {
+  Future<String> fetchVerses(
+      int bookNo, int chapter, List<int> verseNumbers) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'bibledb.db');
     final db = await openDatabase(path);
+
+    // Fetch all verses matching the given numbers
+    final placeholders = List.filled(verseNumbers.length, '?').join(',');
     final result = await db.rawQuery(
-      'SELECT verse FROM bible WHERE Book = ? AND Chapter = ? AND VerseCount = ?',
-      [bookNo, chapter, verse],
+      'SELECT verse FROM bible WHERE Book = ? AND Chapter = ? AND VerseCount IN ($placeholders)',
+      [bookNo, chapter, ...verseNumbers],
     );
-    return result[0]['verse'].toString();
+
+    // Initialize an empty string to hold the verses
+    String verses = '';
+
+    // Loop through the verse numbers and corresponding results
+    for (int i = 0; i < verseNumbers.length; i++) {
+      final verseNumber = verseNumbers[i];
+      final verseText = result[i]['verse'].toString(); // Get the verse text
+      verses +=
+          '$verseNumber   "$verseText"\n'; // Prepend verse number and add a newline
+    }
+
+    return verses.trim(); // Return the verses, trimming any trailing whitespace
   }
 
   Widget _buildErrorState() {
@@ -143,83 +166,45 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                       String note = _groupedBookmarks.keys.elementAt(index);
                       List<dynamic> bookmarks = _groupedBookmarks[note]!;
 
-                      // return ExpansionTile(
-                      //   iconColor: Theme.of(context).iconTheme.color,
-                      //   title: Text(
-                      //     note.isNotEmpty ? note : 'No Note',
-                      //     style: Theme.of(context).textTheme.bodyLarge,
-                      //   ),
-                      //   children: bookmarks.map((bookmark) {
-                      //     return ListTile(
-                      //       title: Text(
-                      //         '${getBookName(bookmark['book'])} ${bookmark['chapter']}:${bookmark['verse']}',
-                      //         style: Theme.of(context).textTheme.bodyMedium,
-                      //       ),
-                      //       subtitle: Text(
-                      //         '${bookmark['text']}',
-                      //         style: Theme.of(context).textTheme.bodyMedium,
-                      //       ),
-                      //     );
-                      //   }).toList(),
-                      // );
-
                       return ExpansionTile(
-                        iconColor: Theme.of(context)
-                            .colorScheme
-                            .secondary, // Customize the icon color
+                        iconColor: Theme.of(context).colorScheme.secondary,
                         backgroundColor: Theme.of(context)
                             .colorScheme
                             .secondary
-                            .withOpacity(
-                                0.3), // Add a light background color for the expanded tile
+                            .withOpacity(0.3),
                         collapsedBackgroundColor: Theme.of(context)
                             .colorScheme
                             .secondary
-                            .withOpacity(
-                                0.3), // Background color when tile is collapsed
+                            .withOpacity(0.3),
                         collapsedIconColor: Theme.of(context)
                             .appBarTheme
                             .titleTextStyle!
                             .color!
                             .withOpacity(0.9),
                         tilePadding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                            vertical: 8.0), // Add padding around the tile
+                            horizontal: 16.0, vertical: 8.0),
                         leading: const Icon(Icons.library_books),
-                        title: Text(note.isNotEmpty ? note : 'No Note',
-                            style: Theme.of(context).textTheme.bodyLarge),
+                        title: Text(
+                          note.isNotEmpty ? note : 'No Note',
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
                         children: bookmarks.map((bookmark) {
                           return ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal:
-                                    16.0), // Adjust padding for list items
+                            contentPadding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
                             title: Text(
-                              '${getBookName(bookmark['book'])} ${bookmark['chapter']}:${bookmark['verse']}',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    fontWeight: FontWeight
-                                        .bold, // Make the book name and verse bold
-                                  ),
-                            ),
-                            subtitle: Text(
                               bookmark['text'],
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyMedium
                                   ?.copyWith(
-                                    fontStyle: FontStyle
-                                        .italic, // Italicize the verse text for better readability
+                                    fontStyle: FontStyle.italic,
                                   ),
                             ),
-                            leading: Icon(
-                              Icons
-                                  .bookmark, // Add a bookmark icon to each list item
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .secondary, // Match the icon color to the theme
-                            ),
+                            // leading: Icon(
+                            //   Icons.bookmark,
+                            //   color: Theme.of(context).colorScheme.secondary,
+                            // ),
                           );
                         }).toList(),
                       );

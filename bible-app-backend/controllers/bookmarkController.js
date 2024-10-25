@@ -1,16 +1,21 @@
-// controllers/bookmarkController.js
-
 const Bookmark = require('../models/Bookmark');
+const Scripture = require('../models/Scripture');
 
 // Add a new bookmark
 exports.addBookmark = async (req, res) => {
-  const { book, chapter, verse ,note} = req.body;
+  const { book, chapter, verseNumbers, note } = req.body;
+
   try {
-    const newBookmark = new Bookmark({
-      user: req.user.id,
+    // Create a new Scripture entry or fetch an existing one
+    const scripture = await Scripture.create({
       book,
       chapter,
-      verse,
+      verseNumbers,
+    });
+
+    const newBookmark = new Bookmark({
+      user: req.user.id,
+      scripture: [scripture._id], // Store the scripture's ID
       note,
     });
 
@@ -22,16 +27,21 @@ exports.addBookmark = async (req, res) => {
   }
 };
 
+
 // Get all bookmarks for the logged-in user
 exports.getBookmarks = async (req, res) => {
   try {
-    const bookmarks = await Bookmark.find({ user: req.user.id }).sort({ dateAdded: -1 });
+    const bookmarks = await Bookmark.find({ user: req.user.id })
+      .populate('scripture') // Populate scripture field with referenced data
+      .sort({ dateAdded: -1 });
+
     res.json(bookmarks);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
   }
 };
+
 
 // Delete a bookmark
 exports.deleteBookmark = async (req, res) => {
@@ -54,3 +64,23 @@ exports.deleteBookmark = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+
+
+[
+  {
+    "_id": "65374bd4e31ad1b2a5d0d3f9",
+    "user": "65374bd4e31ad1b2a5d0d2c7",
+    "scripture": [
+      {
+        "_id": "65374bce31ad1b2a5d0d3a2",
+        "book": 1,
+        "chapter": 3,
+        "verseNumbers": [16, 17],
+        "__v": 0
+      }
+    ],
+    "note": "Important scripture",
+    "dateAdded": "2024-10-24T12:30:27.245Z",
+    "__v": 0
+  }
+]

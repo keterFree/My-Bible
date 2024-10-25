@@ -15,35 +15,11 @@ light:
 #0D0D0D text(primary)
 white - button text and appbar text
 
-actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'addMembers') {
-                onAddMembers();
-              } else if (value == 'requestToJoin') {
-                onRequestToJoin();
-              } else if (value == 'more') {
-                moreOnGroup();
-              }
-            },
-            itemBuilder: (context) {
-              return <PopupMenuEntry<String>>[
-                if (isLeader)
-                  const PopupMenuItem<String>(
-                    value: 'addMembers',
-                    child: Text('Add Members'),
-                  ),
-                if (!isMember)
-                  const PopupMenuItem<String>(
-                    value: 'requestToJoin',
-                    child: Text('Request to Join Group'),
-                  ),
-                const PopupMenuItem<String>(
-                  value: 'more',
-                  child: Text('Group details'),
-                ),
-              ];
-            },
-            icon: const Icon(Icons.more_vert),
-          ),
-        ],
+Sermon Screen
+
+Functionality: Displays a list of available sermons. Users can tap on a sermon to view details
+
+Devotion Screen
+
+Functionality: Lists daily or weekly devotions. Users can read the devotion content, associated scriptures
+

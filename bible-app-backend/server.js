@@ -39,6 +39,16 @@ app.use('/api/devotions', require('./routes/devotions'));
 app.use('/api/scriptures', require('./routes/scriptures'));
 app.use('/api/images', require('./routes/images'));
 
+
+// const admin = require('firebase-admin');
+// const serviceAccount = require('./path/to/serviceAccountKey.json'); // Update this path
+
+// admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount),
+//     storageBucket: process.env.FIREBASE_STORAGE_BUCKET // Your bucket name
+// });
+
+
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
 

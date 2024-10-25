@@ -20,10 +20,6 @@ const SermonSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Scripture'  // Reference to the Scripture model
     }],
-    service: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Service'  // Reference to the Service model
-    }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Sermon', SermonSchema);

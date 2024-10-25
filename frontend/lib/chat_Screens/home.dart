@@ -81,7 +81,7 @@ class _ChatHomeScreenState extends State<ChatHomeScreen>
       });
     } catch (e) {
       print('Error decoding token: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -103,7 +103,7 @@ class _ChatHomeScreenState extends State<ChatHomeScreen>
       }
     } catch (e) {
       print('Error fetching groups: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -125,7 +125,7 @@ class _ChatHomeScreenState extends State<ChatHomeScreen>
       }
     } catch (e) {
       print('Error fetching users: $e');
-      throw e;
+      rethrow;
     }
   }
 

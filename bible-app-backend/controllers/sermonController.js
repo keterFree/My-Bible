@@ -4,20 +4,44 @@ const Scripture = require('../models/Scripture');
 // Create a new sermon
 exports.createSermon = async (req, res) => {
     try {
-        const { title, speaker, notes, scriptureIds, serviceId } = req.body;
+        const { title, speaker, notes, scriptures } = req.body;
 
+        // Array to store scripture IDs
+        const scriptureIds = [];
+
+        // Create or retrieve scripture entries
+        for (const scripture of scriptures) {
+            const { book, chapter, verseNumbers } = scripture;
+
+            // Check if a matching scripture exists
+            let existingScripture = await Scripture.findOne({
+                book,
+                chapter,
+                verseNumbers: { $all: verseNumbers },
+            });
+
+            // If not, create a new scripture entry
+            if (!existingScripture) {
+                existingScripture = new Scripture({ book, chapter, verseNumbers });
+                await existingScripture.save();
+            }
+
+            scriptureIds.push(existingScripture._id); // Collect the scripture ID
+        }
+
+        // Create a new sermon using the scripture IDs
         const sermon = new Sermon({
             title,
             speaker,
             notes,
-            scriptures: scriptureIds,  // Expecting an array of Scripture ObjectIds
-            service: serviceId
+            scriptures: scriptureIds,
         });
 
-        await sermon.save();
-        res.status(201).json(sermon);
+        await sermon.save(); // Save the sermon to the database
+        res.status(201).json(sermon); // Respond with the created sermon
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error(error.message);
+        res.status(500).json({ message: 'Server Error' });
     }
 };
 
@@ -25,8 +49,7 @@ exports.createSermon = async (req, res) => {
 exports.getSermonById = async (req, res) => {
     try {
         const sermon = await Sermon.findById(req.params.id)
-            .populate('scriptures') // Populate the scripture objects
-            .populate('service');  // Optionally populate the service details
+            .populate('scriptures'); // Populate the scripture objects
 
         if (!sermon) {
             return res.status(404).json({ message: 'Sermon not found' });
@@ -42,8 +65,7 @@ exports.getSermonById = async (req, res) => {
 exports.getAllSermons = async (req, res) => {
     try {
         const sermons = await Sermon.find({})
-            .populate('scriptures') // Populate scripture details
-            .populate('service'); // Optionally populate service details
+            .populate('scriptures'); // Populate scripture details
         res.status(200).json(sermons);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -53,11 +75,11 @@ exports.getAllSermons = async (req, res) => {
 // Update a sermon
 exports.updateSermon = async (req, res) => {
     try {
-        const { title, speaker, notes, scriptureIds, serviceId } = req.body;
+        const { title, speaker, notes, scriptureIds } = req.body;
 
         const updatedSermon = await Sermon.findByIdAndUpdate(
             req.params.id,
-            { title, speaker, notes, scriptures: scriptureIds, service: serviceId },
+            { title, speaker, notes, scriptures: scriptureIds },
             { new: true }
         );
 
