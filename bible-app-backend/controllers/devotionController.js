@@ -4,13 +4,12 @@ const Scripture = require('../models/Scripture');
 // Create a new devotion
 exports.createDevotion = async (req, res) => {
     try {
-        const { title, content, scriptureIds, serviceId } = req.body;
+        const { title, content, scriptureIds } = req.body;
 
         const devotion = new Devotion({
             title,
             content,
             scriptures: scriptureIds,  // Expecting an array of Scripture ObjectIds
-            service: serviceId
         });
 
         await devotion.save();
@@ -25,7 +24,6 @@ exports.getDevotionById = async (req, res) => {
     try {
         const devotion = await Devotion.findById(req.params.id)
             .populate('scriptures') // Populate the scripture objects
-            .populate('service');  // Optionally populate the service details
 
         if (!devotion) {
             return res.status(404).json({ message: 'Devotion not found' });
@@ -42,7 +40,6 @@ exports.getAllDevotions = async (req, res) => {
     try {
         const devotions = await Devotion.find({})
             .populate('scriptures') // Populate scripture details
-            .populate('service'); // Optionally populate service details
         res.status(200).json(devotions);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -52,11 +49,11 @@ exports.getAllDevotions = async (req, res) => {
 // Update a devotion
 exports.updateDevotion = async (req, res) => {
     try {
-        const { title, content, scriptureIds, serviceId } = req.body;
+        const { title, content, scriptureIds } = req.body;
 
         const updatedDevotion = await Devotion.findByIdAndUpdate(
             req.params.id,
-            { title, content, scriptures: scriptureIds, service: serviceId },
+            { title, content, scriptures: scriptureIds },
             { new: true }
         );
 
