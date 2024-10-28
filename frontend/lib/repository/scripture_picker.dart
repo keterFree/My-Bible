@@ -18,7 +18,7 @@ class _ScripturePickerState extends State<ScripturePicker> {
   int chapterCount = 0;
   int verseCount = 0;
 
-  List<Map<String, dynamic>> scriptures = []; // Store multiple selections
+  List<Map<String, dynamic>> scriptures = [];
 
   void loadChapters(String book) async {
     final bookId = Lists.books.indexOf(book);
@@ -44,9 +44,9 @@ class _ScripturePickerState extends State<ScripturePicker> {
         selectedChapter != null &&
         selectedVerses.isNotEmpty) {
       final scripture = {
-        'book': Lists.books.indexOf(selectedBook!), // Use index for book ID
+        'book': Lists.books.indexOf(selectedBook!),
         'chapter': selectedChapter!,
-        'verseNumbers': List.from(selectedVerses), // Clone the list
+        'verseNumbers': List.from(selectedVerses),
       };
 
       setState(() {
@@ -56,7 +56,6 @@ class _ScripturePickerState extends State<ScripturePicker> {
         selectedBook = null;
       });
 
-      // Trigger callback with the updated list of scriptures
       widget.onScripturesSelected(scriptures);
     }
   }
@@ -88,28 +87,22 @@ class _ScripturePickerState extends State<ScripturePicker> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        SizedBox(height: 10),
-
-        // Display selected scriptures
+        const SizedBox(height: 10),
         if (scriptures.isNotEmpty) ...[
-          const Text(
-            'Selected Scriptures:',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
+          _buildText('Selected Scriptures:', context),
           const SizedBox(height: 8),
           ListView.builder(
-            shrinkWrap: true, // To avoid scrolling conflicts with the parent
+            shrinkWrap: true,
             itemCount: scriptures.length,
             itemBuilder: (context, index) {
               final scripture = scriptures[index];
               final bookName = Lists.books[scripture['book']];
               final chapter = scripture['chapter'];
-              print(scripture['verseNumbers']
-                  .runtimeType); // Should output List<int> or List<dynamic>
               final verses =
                   (scripture['verseNumbers'] as List).cast<int>().join(', ');
+
               return ListTile(
-                title: Text('$bookName $chapter:$verses'),
+                title: _buildText('$bookName $chapter:$verses', context),
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
                   onPressed: () => removeScripture(index),
@@ -117,28 +110,34 @@ class _ScripturePickerState extends State<ScripturePicker> {
               );
             },
           ),
-          const Divider(), // Optional: Add a divider for separation
+          const Divider(),
         ],
-
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             DropdownButton<String>(
-              hint: const Text('Add Scripture'),
+              dropdownColor: Colors.black.withOpacity(0.7),
+              hint: _buildText('Add Scripture', context),
               value: selectedBook,
               items: Lists.books.map((book) {
-                return DropdownMenuItem(value: book, child: Text(book));
+                return DropdownMenuItem(
+                  value: book,
+                  child: _buildText(book, context),
+                );
               }).toList(),
               onChanged: (book) => loadChapters(book!),
             ),
             if (selectedBook != null)
               DropdownButton<int>(
-                hint: const Text('Select Chapter'),
+                dropdownColor: Colors.black.withOpacity(0.7),
+                hint: _buildText('Select Chapter', context),
                 value: selectedChapter,
                 items: List.generate(chapterCount, (index) {
                   return DropdownMenuItem(
-                      value: index + 1, child: Text('Chapter ${index + 1}'));
+                    value: index + 1,
+                    child: _buildText('Chapter ${index + 1}', context),
+                  );
                 }),
                 onChanged: (chapter) => loadVerses(chapter!),
               ),
@@ -149,23 +148,31 @@ class _ScripturePickerState extends State<ScripturePicker> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               ElevatedButton(
-                onPressed: () => showRangeDialog(),
-                child: const Text('Select Verse Range'),
+                onPressed: showRangeDialog,
+                child: Text('Select Verse Range'),
               ),
               ElevatedButton(
                 onPressed: selectEntireChapter,
-                child: const Text('Select Entire Chapter'),
+                child: Text('Select Entire Chapter'),
               ),
             ],
           ),
           Wrap(
+            alignment: WrapAlignment.spaceEvenly,
             spacing: 8.0,
             children: List.generate(verseCount, (index) {
               final verse = index + 1;
               return FilterChip(
+                selectedShadowColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                backgroundColor:
+                    Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+                surfaceTintColor: Theme.of(context).colorScheme.secondary,
                 selectedColor:
                     Theme.of(context).colorScheme.secondary.withOpacity(0.6),
-                label: Text('$verse'),
+                label: Text('$verse',
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary)),
                 selected: selectedVerses.contains(verse),
                 onSelected: (_) => toggleVerseSelection(verse),
               );
@@ -173,7 +180,7 @@ class _ScripturePickerState extends State<ScripturePicker> {
           ),
           ElevatedButton(
             onPressed: addScripture,
-            child: const Text('Add Scripture'),
+            child: Text('Add Scripture'),
           ),
         ],
       ],
@@ -185,8 +192,14 @@ class _ScripturePickerState extends State<ScripturePicker> {
       scriptures.removeAt(index);
     });
 
-    // Trigger callback with the updated scriptures list
     widget.onScripturesSelected(scriptures);
+  }
+
+  Widget _buildText(String text, BuildContext context) {
+    return Text(
+      text,
+      style: Theme.of(context).textTheme.bodyMedium,
+    );
   }
 
   void showRangeDialog() {
@@ -197,17 +210,19 @@ class _ScripturePickerState extends State<ScripturePicker> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Select Verse Range'),
+          backgroundColor: Colors.black.withOpacity(0.6),
+          title: _buildText('Select Verse Range', context),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButton<int>(
-                hint: const Text('Start Verse'),
+                dropdownColor: Colors.black.withOpacity(0.7),
+                hint: _buildText('Start Verse', context),
                 value: startVerse,
                 items: List.generate(verseCount, (index) {
                   return DropdownMenuItem(
                     value: index + 1,
-                    child: Text('Verse ${index + 1}'),
+                    child: _buildText('Verse ${index + 1}', context),
                   );
                 }),
                 onChanged: (value) {
@@ -215,12 +230,13 @@ class _ScripturePickerState extends State<ScripturePicker> {
                 },
               ),
               DropdownButton<int>(
-                hint: const Text('End Verse'),
+                dropdownColor: Colors.black.withOpacity(0.7),
+                hint: _buildText('End Verse', context),
                 value: endVerse,
                 items: List.generate(verseCount, (index) {
                   return DropdownMenuItem(
                     value: index + 1,
-                    child: Text('Verse ${index + 1}'),
+                    child: _buildText('Verse ${index + 1}', context),
                   );
                 }),
                 onChanged: (value) {
@@ -237,7 +253,7 @@ class _ScripturePickerState extends State<ScripturePicker> {
                   selectRange(startVerse!, endVerse!);
                 }
               },
-              child: const Text('Select Range'),
+              child: Text('Select Range'),
             ),
           ],
         );

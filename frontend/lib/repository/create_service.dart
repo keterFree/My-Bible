@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:frontend/base_scaffold.dart';
 import 'package:frontend/constants.dart';
 import 'package:http/http.dart' as http;
 import 'scripture_picker.dart';
@@ -31,64 +32,51 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
 
   final TextEditingController sermonTitleController = TextEditingController();
   final TextEditingController sermonSpeakerController = TextEditingController();
-  final List<Map<String, dynamic>> sermons = [];
 
   List<Map<String, dynamic>>? selectedDevotionScripture;
   List<Map<String, dynamic>>? selectedSermonScripture;
-  List<Uint8List> uploadedImages = []; // Add this line
+  List<Uint8List> uploadedImages = [];
+  bool isUploading = false; // State variable for upload progress
+
+  ElevatedButton elevatedB(String label, VoidCallback method) {
+    return ElevatedButton(
+      onPressed: isUploading ? null : method,
+      style: ElevatedButton.styleFrom(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      ),
+      child: isUploading
+          ? const CircularProgressIndicator(color: Colors.white)
+          : Text(label),
+    );
+  }
 
   Future<void> uploadImages() async {
-    // Pick multiple image files
+    setState(() => isUploading = true);
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
-      allowMultiple: true, // Allow multiple selections
+      allowMultiple: true,
     );
 
     if (result != null && result.files.isNotEmpty) {
       for (var file in result.files) {
-        // Check if file.bytes is null, if so, use the file path
-        Uint8List? fileBytes;
-        if (file.bytes != null) {
-          fileBytes = file.bytes;
-        } else {
-          // If bytes are not available, read the file using the file path
-          final filePath = file.path;
-          if (filePath != null) {
-            fileBytes = await File(filePath).readAsBytes();
-          }
-        }
+        Uint8List? fileBytes =
+            file.bytes ?? await File(file.path!).readAsBytes();
 
-        // If fileBytes is still null, show an error
-        if (fileBytes == null) {
-          _showSnackBar('Failed to read the file: ${file.name}');
-          continue; // Skip to the next file
-        }
-
-        // Create a multipart request
-        final request = http.MultipartRequest(
-          'POST',
-          Uri.parse(ApiConstants.uploadImage),
-        );
-
-        // Add the file to the request
-        request.files.add(http.MultipartFile.fromBytes(
-          'file', // This should match the field name in your Node.js code
-          fileBytes, // Use the file bytes
-          filename: file.name, // The original filename
-        ));
-
-        // Send the request
+        final request =
+            http.MultipartRequest('POST', Uri.parse(ApiConstants.uploadImage));
+        request.files.add(http.MultipartFile.fromBytes('file', fileBytes,
+            filename: file.name));
         final response = await request.send();
 
-        // Handle the response
         if (response.statusCode == 201) {
           final responseData =
               json.decode(await response.stream.bytesToString());
           setState(() {
-            print(responseData.toString());
-            imageIds.add(responseData['_id']); // Store the uploaded image ID
-            // You can also store the image bytes for display
-            uploadedImages.add(fileBytes!); // Store the image bytes for display
+            imageIds.add(responseData['_id']);
+            uploadedImages.add(fileBytes);
           });
           _showSnackBar('Image uploaded successfully: ${file.name}');
         } else {
@@ -98,6 +86,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
     } else {
       _showSnackBar('No files selected');
     }
+    setState(() => isUploading = false);
   }
 
   Future<void> submitService() async {
@@ -109,22 +98,48 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
         'theme': theme,
         'images': imageIds,
         'devotions': devotions,
-        'sermons': sermons,
+        'sermons': {
+          'title': sermonTitleController.text,
+          'speaker': sermonSpeakerController.text,
+          'scriptures': selectedSermonScripture ?? [],
+        },
       };
 
-      final response = await http.post(
-        Uri.parse(ApiConstants.uploadService),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(serviceData),
-      );
+      try {
+        final response = await http.post(
+          Uri.parse(ApiConstants.uploadService),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode(serviceData),
+        );
 
-      if (response.statusCode == 201) {
-        _showSnackBar('Service created successfully!');
-        Navigator.pop(context);
-      } else {
-        _showSnackBar('Failed to create service');
+        if (response.statusCode == 201) {
+          _showSnackBar('Service created successfully!');
+          _resetForm();
+        } else {
+          _showSnackBar('Failed to create service: ${response.reasonPhrase}');
+        }
+      } catch (error) {
+        _showSnackBar('An error occurred: $error');
       }
     }
+  }
+
+  void _resetForm() {
+    setState(() {
+      title = '';
+      location = '';
+      theme = '';
+      date = null;
+      imageIds.clear();
+      uploadedImages.clear();
+      devotions.clear();
+      devotionTitleController.clear();
+      devotionContentController.clear();
+      sermonTitleController.clear();
+      sermonSpeakerController.clear();
+      selectedDevotionScripture = null;
+      selectedSermonScripture = null;
+    });
   }
 
   void _showSnackBar(String message) {
@@ -134,8 +149,8 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Create Service')),
+    return BaseScaffold(
+      title: 'Create Service',
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -145,30 +160,41 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
               _buildTextField('Title', (value) => title = value),
               _buildTextField('Location', (value) => location = value),
               _buildTextField('Theme', (value) => theme = value),
+              _buildSermonSection(),
+              const Divider(),
               _buildDatePicker(),
               Text('Uploaded Images: ${imageIds.length}'),
-              Row(
-                children: [
-                  // Display uploaded images
-                  ...uploadedImages.map((imageBytes) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 8.0, horizontal: 4.0),
-                      child: Image.memory(imageBytes, height: 100),
-                    );
-                  }).toList()
-                ],
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 150, // Adjust this for the desired width
+                  mainAxisSpacing: 4.0,
+                  crossAxisSpacing: 2.0,
+                  childAspectRatio:
+                      1, // Control the aspect ratio (width/height) of items
+                ),
+                itemCount: uploadedImages.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: Image.memory(
+                        uploadedImages[index],
+                        fit: BoxFit
+                            .cover, // Makes sure images fill the space nicely
+                      ),
+                    ),
+                  );
+                },
               ),
-              ElevatedButton(
-                  onPressed: uploadImages, child: Text('Upload Images')),
-              SizedBox(height: 8),
-              Divider(),
+              elevatedB('Upload Images', uploadImages),
+              const SizedBox(height: 8),
+              const Divider(),
               _buildDevotionSection(),
-              Divider(),
-              _buildSermonSection(),
-              SizedBox(height: 16),
-              ElevatedButton(
-                  onPressed: submitService, child: Text('Create Service')),
+              const SizedBox(height: 16),
+              elevatedB('Create Service', submitService),
             ],
           ),
         ),
@@ -178,7 +204,8 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
 
   Widget _buildTextField(String label, Function(String) onChanged) {
     return TextFormField(
-      decoration: InputDecoration(labelText: label),
+      decoration: InputDecoration(
+          labelText: label, labelStyle: Theme.of(context).textTheme.bodyMedium),
       onChanged: onChanged,
       validator: (value) => value!.isEmpty ? 'Please enter $label' : null,
     );
@@ -193,11 +220,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
           firstDate: DateTime(2000),
           lastDate: DateTime(2100),
         );
-        if (selectedDate != null) {
-          setState(() {
-            date = selectedDate;
-          });
-        }
+        if (selectedDate != null) setState(() => date = selectedDate);
       },
       child: Text(date == null ? 'Select Date' : date!.toIso8601String()),
     );
@@ -207,29 +230,28 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Devotions', style: TextStyle(fontWeight: FontWeight.bold)),
-        _buildTextField('Devotion Title', (_) {}),
+        const Text('Devotions', style: TextStyle(fontWeight: FontWeight.bold)),
+        _buildTextField('Devotion Title', (value) {
+          devotionTitleController.text = value;
+        }),
         ScripturePicker(onScripturesSelected: (scripture) {
+          setState(() => selectedDevotionScripture = scripture);
+        }),
+        _buildTextField('Devotion Content', (value) {
+          devotionContentController.text = value;
+        }),
+        elevatedB('Add Devotion', () {
           setState(() {
-            selectedDevotionScripture = scripture;
+            devotions.add({
+              'title': devotionTitleController.text,
+              'content': devotionContentController.text,
+              'scriptures': selectedDevotionScripture ?? [],
+            });
+            devotionTitleController.clear();
+            devotionContentController.clear();
+            selectedDevotionScripture = null;
           });
         }),
-        _buildTextField('Devotion Content', (_) {}),
-        ElevatedButton(
-          onPressed: () {
-            setState(() {
-              devotions.add({
-                'title': devotionTitleController.text,
-                'content': devotionContentController.text,
-                'scriptures': selectedDevotionScripture ?? [],
-              });
-              devotionTitleController.clear();
-              devotionContentController.clear();
-              selectedDevotionScripture = null;
-            });
-          },
-          child: Text('Add Devotion'),
-        ),
       ],
     );
   }
@@ -238,29 +260,16 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Sermons', style: TextStyle(fontWeight: FontWeight.bold)),
-        _buildTextField('Sermon Title', (_) {}),
-        ScripturePicker(onScripturesSelected: (scripture) {
-          setState(() {
-            selectedSermonScripture = scripture;
-          });
+        const Text('Sermons', style: TextStyle(fontWeight: FontWeight.bold)),
+        _buildTextField('Sermon Title', (value) {
+          sermonTitleController.text = value;
         }),
-        _buildTextField('Sermon Speaker', (_) {}),
-        ElevatedButton(
-          onPressed: () {
-            setState(() {
-              sermons.add({
-                'title': sermonTitleController.text,
-                'speaker': sermonSpeakerController.text,
-                'scriptures': selectedSermonScripture ?? [],
-              });
-              sermonTitleController.clear();
-              sermonSpeakerController.clear();
-              selectedSermonScripture = null;
-            });
-          },
-          child: Text('Add Sermon'),
-        ),
+        ScripturePicker(onScripturesSelected: (scripture) {
+          setState(() => selectedSermonScripture = scripture);
+        }),
+        _buildTextField('Speaker', (value) {
+          sermonSpeakerController.text = value;
+        }),
       ],
     );
   }

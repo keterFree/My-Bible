@@ -13,6 +13,8 @@ class ApiConstants {
   static const String programItem = '$authbaseUrl/api/events/programItem';
   static const String addToGroup = '$authbaseUrl/api/groups/add';
   static const String groupMessages = '$authbaseUrl/api/groups/messages';
+  static const String uploadImage = '$authbaseUrl/api/images/upload';
+  static const String uploadService = '$authbaseUrl/api/services';
   static const String passwordResetSendEndpoint =
       '$authbaseUrl/api/auth/password-reset/send';
   static const String passwordResetVerifyEndpoint =

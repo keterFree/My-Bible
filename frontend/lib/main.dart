@@ -10,8 +10,18 @@ import 'package:frontend/lit_Screens/book/books.dart';
 import 'package:frontend/lit_Screens/book/highlights.dart';
 import 'package:frontend/lit_Screens/error_screen.dart';
 import 'package:frontend/lit_Screens/home.dart';
+import 'package:frontend/repository/create_service.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+// release:
+// Clean the project: Run
+//flutter clean
+// to remove any previous build files and configurations1.
+
+// Generate the release APK: Run
+//flutter build apk --release
+//This command will create a release APK file in the build/app/outputs/flutter-apk/app-release.apk directory.
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,6 +60,7 @@ class MyApp extends StatelessWidget {
         '/error': (context) => const ErrorScreen(),
         '/homeChat': (context) => const ChatHomeScreen(),
         '/homeEvents': (context) => const EventListScreen(),
+        '/createService': (context) => const CreateServiceScreen()
       },
       onGenerateRoute: (settings) {
         return MaterialPageRoute(
@@ -157,6 +168,8 @@ Widget screenFactory(String routeName) {
       return const BookmarksScreen();
     case '/account':
       return const AccountScreen();
+    case '/createService':
+      return const CreateServiceScreen();
     default:
       return const SplashScreen();
   }

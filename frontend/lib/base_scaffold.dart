@@ -88,7 +88,8 @@ class BaseScaffold extends StatelessWidget {
               children: [
                 _buildNavIcon(context, Icons.home, 'Home', '/home'),
                 _buildNavIcon(context, Icons.book, 'Bible', '/books'),
-                _buildNavIcon(context, Icons.star, 'Highlights', '/highlights'),
+                _buildNavIcon(context, Icons.add_home_outlined, 'Add service',
+                    '/createService'),
                 _buildNavIcon(
                     context, Icons.bookmark, 'Bookmarks', '/bookmarks'),
                 _buildNavIcon(
