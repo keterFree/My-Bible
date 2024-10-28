@@ -1,54 +1,41 @@
-const Image = require('../models/Image'); // Ensure this path is correct
-const multer = require('multer'); // Assuming you're using multer for file uploads
-const { v4: uuidv4 } = require('uuid'); // To generate unique IDs for files
-const admin = require('firebase-admin'); // Firebase admin SDK for uploading images
+const multer = require('multer');
+const Image = require('../models/Image');
 
-// Configure Multer
+// Configure Multer for in-memory storage
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Upload an image
+// Upload Image Endpoint
 exports.uploadImage = async (req, res) => {
     try {
-        const file = req.file; // Assuming the image is uploaded as 'file'
+        const file = req.file; // Image uploaded as 'file'
 
         if (!file) {
             return res.status(400).json({ message: 'No file uploaded' });
         }
 
-        // Generate a unique filename
-        const filename = `${uuidv4()}_${file.originalname}`;
-
-        // Upload to Firebase Storage
-        const bucket = admin.storage().bucket(); // Ensure your Firebase Storage bucket is correctly configured
-        const fileUpload = bucket.file(filename);
-
-        // Upload file to Firebase
-        await fileUpload.save(file.buffer, {
-            metadata: {
-                contentType: file.mimetype,
-            },
-            resumable: false,
-        });
-
-        const imageUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`; // Construct the URL
-
-        // Create a new image document
+        // Create a new Image document
         const image = new Image({
             filename: file.originalname,
-            imageUrl,
+            imageData: file.buffer, // Store binary data
+            contentType: file.mimetype,
             fileSize: file.size,
-            service: req.body.serviceId, // Ensure the service ID is sent in the body
         });
 
-        await image.save();
-        res.status(201).json(image);
+        const savedImage = await image.save(); // Save the image to MongoDB
+
+        // Return the saved image's _id in the response
+        res.status(201).json({ message: 'Image uploaded successfully', _id: savedImage._id });
     } catch (error) {
+        console.log(error);
         res.status(500).json({ message: error.message });
     }
 };
 
-// Get a single image by ID
+// Middleware to handle file uploads
+exports.uploadMiddleware = upload.single('file');
+
+
 exports.getImageById = async (req, res) => {
     try {
         const image = await Image.findById(req.params.id);
@@ -57,11 +44,14 @@ exports.getImageById = async (req, res) => {
             return res.status(404).json({ message: 'Image not found' });
         }
 
-        res.status(200).json(image);
+        // Set the appropriate Content-Type
+        res.set('Content-Type', image.contentType);
+        res.send(image.imageData); // Send the binary data
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
+
 
 // Get all images
 exports.getAllImages = async (req, res) => {
@@ -82,14 +72,10 @@ exports.deleteImage = async (req, res) => {
             return res.status(404).json({ message: 'Image not found' });
         }
 
-        // Delete from Firebase Storage
-        const bucket = admin.storage().bucket();
-        await bucket.file(image.filename).delete();
-
-        // Delete from the database
-        await Image.findByIdAndDelete(req.params.id);
-        res.status(200).json({ message: 'Image deleted' });
+        await Image.findByIdAndDelete(req.params.id); // Delete from DB
+        res.status(200).json({ message: 'Image deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
+

@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:frontend/constants.dart';
 import 'package:http/http.dart' as http;
 import 'scripture_picker.dart';
 
@@ -32,32 +35,68 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
 
   List<Map<String, dynamic>>? selectedDevotionScripture;
   List<Map<String, dynamic>>? selectedSermonScripture;
+  List<Uint8List> uploadedImages = []; // Add this line
 
-  Future<void> uploadImage() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.image);
+  Future<void> uploadImages() async {
+    // Pick multiple image files
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: true, // Allow multiple selections
+    );
 
-    if (result != null) {
-      final file = result.files.first;
-      final request = http.MultipartRequest(
-        'POST',
-        Uri.parse('https://your-backend-url/upload-image'),
-      );
+    if (result != null && result.files.isNotEmpty) {
+      for (var file in result.files) {
+        // Check if file.bytes is null, if so, use the file path
+        Uint8List? fileBytes;
+        if (file.bytes != null) {
+          fileBytes = file.bytes;
+        } else {
+          // If bytes are not available, read the file using the file path
+          final filePath = file.path;
+          if (filePath != null) {
+            fileBytes = await File(filePath).readAsBytes();
+          }
+        }
 
-      request.files.add(http.MultipartFile.fromBytes(
-        'file',
-        file.bytes!,
-        filename: file.name,
-      ));
+        // If fileBytes is still null, show an error
+        if (fileBytes == null) {
+          _showSnackBar('Failed to read the file: ${file.name}');
+          continue; // Skip to the next file
+        }
 
-      final response = await request.send();
-      if (response.statusCode == 201) {
-        final responseData = json.decode(await response.stream.bytesToString());
-        setState(() {
-          imageIds.add(responseData['_id']);
-        });
-      } else {
-        _showSnackBar('Image upload failed');
+        // Create a multipart request
+        final request = http.MultipartRequest(
+          'POST',
+          Uri.parse(ApiConstants.uploadImage),
+        );
+
+        // Add the file to the request
+        request.files.add(http.MultipartFile.fromBytes(
+          'file', // This should match the field name in your Node.js code
+          fileBytes, // Use the file bytes
+          filename: file.name, // The original filename
+        ));
+
+        // Send the request
+        final response = await request.send();
+
+        // Handle the response
+        if (response.statusCode == 201) {
+          final responseData =
+              json.decode(await response.stream.bytesToString());
+          setState(() {
+            print(responseData.toString());
+            imageIds.add(responseData['_id']); // Store the uploaded image ID
+            // You can also store the image bytes for display
+            uploadedImages.add(fileBytes!); // Store the image bytes for display
+          });
+          _showSnackBar('Image uploaded successfully: ${file.name}');
+        } else {
+          _showSnackBar('Image upload failed: ${response.reasonPhrase}');
+        }
       }
+    } else {
+      _showSnackBar('No files selected');
     }
   }
 
@@ -74,7 +113,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
       };
 
       final response = await http.post(
-        Uri.parse('https://your-backend-url/create-service'),
+        Uri.parse(ApiConstants.uploadService),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(serviceData),
       );
@@ -107,10 +146,22 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
               _buildTextField('Location', (value) => location = value),
               _buildTextField('Theme', (value) => theme = value),
               _buildDatePicker(),
-              ElevatedButton(
-                  onPressed: uploadImage, child: Text('Upload Image')),
-              SizedBox(height: 8),
               Text('Uploaded Images: ${imageIds.length}'),
+              Row(
+                children: [
+                  // Display uploaded images
+                  ...uploadedImages.map((imageBytes) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 4.0),
+                      child: Image.memory(imageBytes, height: 100),
+                    );
+                  }).toList()
+                ],
+              ),
+              ElevatedButton(
+                  onPressed: uploadImages, child: Text('Upload Images')),
+              SizedBox(height: 8),
               Divider(),
               _buildDevotionSection(),
               Divider(),

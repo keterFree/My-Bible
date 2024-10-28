@@ -3,23 +3,22 @@ const mongoose = require('mongoose');
 const ImageSchema = new mongoose.Schema({
     filename: {
         type: String,
-        required: true // The original filename of the image
+        required: true,
     },
-    imageUrl: {
-        type: String,
-        required: true // The Firebase Storage URL for the image
+    imageData: {
+        type: Buffer, // Store image binary data
+        required: true,
+    },
+    contentType: {
+        type: String, // Store MIME type (e.g., 'image/png', 'image/jpeg')
+        required: true,
     },
     fileSize: {
-        type: Number, // Size of the file in bytes
+        type: Number, // Store file size in bytes
     },
     uploadDate: {
         type: Date,
-        default: Date.now // Automatically set the upload date
-    },
-    service: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Service', // Reference to the related service
-        required: true
+        default: Date.now, // Automatically set the upload date
     }
 }, { timestamps: true });
 
