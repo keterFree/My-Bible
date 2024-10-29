@@ -89,7 +89,7 @@ class _ScripturePickerState extends State<ScripturePicker> {
       children: [
         const SizedBox(height: 10),
         if (scriptures.isNotEmpty) ...[
-          _buildText('Selected Scriptures:', context),
+          _buildText('Selected Scriptures', context),
           const SizedBox(height: 8),
           ListView.builder(
             shrinkWrap: true,
@@ -114,10 +114,10 @@ class _ScripturePickerState extends State<ScripturePicker> {
         ],
         const SizedBox(height: 10),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
             DropdownButton<String>(
-              dropdownColor: Colors.black.withOpacity(0.7),
+              dropdownColor: Colors.black.withOpacity(0.85),
               hint: _buildText('Add Scripture', context),
               value: selectedBook,
               items: Lists.books.map((book) {
@@ -128,9 +128,10 @@ class _ScripturePickerState extends State<ScripturePicker> {
               }).toList(),
               onChanged: (book) => loadChapters(book!),
             ),
+            SizedBox(width: 10),
             if (selectedBook != null)
               DropdownButton<int>(
-                dropdownColor: Colors.black.withOpacity(0.7),
+                dropdownColor: Colors.black.withOpacity(0.85),
                 hint: _buildText('Select Chapter', context),
                 value: selectedChapter,
                 items: List.generate(chapterCount, (index) {
@@ -149,41 +150,56 @@ class _ScripturePickerState extends State<ScripturePicker> {
             children: [
               ElevatedButton(
                 onPressed: showRangeDialog,
-                child: Text('Select Verse Range'),
+                child: Text('Verse Range'),
               ),
               ElevatedButton(
                 onPressed: selectEntireChapter,
-                child: Text('Select Entire Chapter'),
+                child: Text('Entire Chapter'),
               ),
             ],
           ),
-          Wrap(
-            alignment: WrapAlignment.spaceEvenly,
-            spacing: 8.0,
-            children: List.generate(verseCount, (index) {
-              final verse = index + 1;
-              return FilterChip(
-                selectedShadowColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-                backgroundColor:
-                    Theme.of(context).colorScheme.secondary.withOpacity(0.2),
-                surfaceTintColor: Theme.of(context).colorScheme.secondary,
-                selectedColor:
-                    Theme.of(context).colorScheme.secondary.withOpacity(0.6),
-                label: Text('$verse',
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary)),
-                selected: selectedVerses.contains(verse),
-                onSelected: (_) => toggleVerseSelection(verse),
-              );
-            }),
-          ),
+          _buildVerseGrid(),
           ElevatedButton(
             onPressed: addScripture,
             child: Text('Add Scripture'),
           ),
         ],
       ],
+    );
+  }
+
+  Widget _buildVerseGrid() {
+    return GridView.builder(
+      shrinkWrap: true, // Ensures it only takes the necessary space
+      physics:
+          const NeverScrollableScrollPhysics(), // Prevents scrolling inside the grid
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 5, // Adjust this based on how many columns you need
+        crossAxisSpacing: 6.0,
+        mainAxisSpacing: 6.0,
+        childAspectRatio: 1.5, // Adjust for the size/shape of the chips
+      ),
+      itemCount: verseCount,
+      itemBuilder: (context, index) {
+        final verse = index + 1;
+        return FilterChip(
+          selectedShadowColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          backgroundColor:
+              Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+          surfaceTintColor: Theme.of(context).colorScheme.secondary,
+          selectedColor:
+              Theme.of(context).colorScheme.secondary.withOpacity(0.6),
+          label: Text(
+            '$verse',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.secondary,
+            ),
+          ),
+          selected: selectedVerses.contains(verse),
+          onSelected: (_) => toggleVerseSelection(verse),
+        );
+      },
     );
   }
 
@@ -216,7 +232,7 @@ class _ScripturePickerState extends State<ScripturePicker> {
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButton<int>(
-                dropdownColor: Colors.black.withOpacity(0.7),
+                dropdownColor: Colors.black.withOpacity(0.85),
                 hint: _buildText('Start Verse', context),
                 value: startVerse,
                 items: List.generate(verseCount, (index) {
@@ -230,7 +246,7 @@ class _ScripturePickerState extends State<ScripturePicker> {
                 },
               ),
               DropdownButton<int>(
-                dropdownColor: Colors.black.withOpacity(0.7),
+                dropdownColor: Colors.black.withOpacity(0.85),
                 hint: _buildText('End Verse', context),
                 value: endVerse,
                 items: List.generate(verseCount, (index) {

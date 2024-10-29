@@ -14,7 +14,7 @@ const SermonSchema = new mongoose.Schema({
         required: true
     },
     notes: {
-        type: String
+        type: [String]
     },
     scriptures: [{
         type: mongoose.Schema.Types.ObjectId,
