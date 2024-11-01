@@ -53,7 +53,7 @@ exports.createService = async (req, res) => {
         const service = new Service({ title, date, location, themes: [theme] });
         await service.save();
 
-        res.status(201).json({ serviceId: service._id });
+        res.status(201).json({ serviceId: service._id, title: title });
     } catch (error) {
         console.error(error.message);
         res.status(500).json({ message: `Failed to create service: ${error.message}` });
@@ -196,16 +196,7 @@ exports.getServiceById = async (req, res) => {
 // Get all services with populated fields
 exports.getAllServices = async (req, res) => {
     try {
-        const services = await Service.find({})
-            .populate({
-                path: 'sermons',
-                populate: { path: 'scriptures' },
-            })
-            .populate({
-                path: 'devotions',
-                populate: { path: 'scriptures' },
-            })
-            .populate('images');
+        const services = await Service.find({});
 
         res.status(200).json(services);
     } catch (error) {

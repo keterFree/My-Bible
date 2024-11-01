@@ -18,6 +18,7 @@ class ApiConstants {
   static const String uploadSermon = '$authbaseUrl/api/services/sermons';
   static const String uploadDevotions = '$authbaseUrl/api/services/devotions';
   static const String saveImages = '$authbaseUrl/api/services/images';
+  static const String services = '$authbaseUrl/api/services';
   static const String passwordResetSendEndpoint =
       '$authbaseUrl/api/auth/password-reset/send';
   static const String passwordResetVerifyEndpoint =

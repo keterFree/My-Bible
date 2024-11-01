@@ -25,7 +25,7 @@ exports.uploadImage = async (req, res) => {
         const savedImage = await image.save(); // Save the image to MongoDB
 
         // Return the saved image's _id in the response
-        res.status(201).json({ message: 'Image uploaded successfully', _id: savedImage._id });
+        res.status(201).json({ message: 'Image uploaded successfully', _id: savedImage._id, name: savedImage.filename });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: error.message });

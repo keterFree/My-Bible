@@ -11,6 +11,7 @@ import 'package:frontend/lit_Screens/book/highlights.dart';
 import 'package:frontend/lit_Screens/error_screen.dart';
 import 'package:frontend/lit_Screens/home.dart';
 import 'package:frontend/repository/create_service.dart';
+import 'package:frontend/repository/show_services.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -60,7 +61,8 @@ class MyApp extends StatelessWidget {
         '/error': (context) => const ErrorScreen(),
         '/homeChat': (context) => const ChatHomeScreen(),
         '/homeEvents': (context) => const EventListScreen(),
-        '/createService': (context) => const CreateServiceScreen()
+        '/createService': (context) => const CreateServiceScreen(),
+        '/showService': (context) => const ServicesScreen()
       },
       onGenerateRoute: (settings) {
         return MaterialPageRoute(
@@ -170,6 +172,8 @@ Widget screenFactory(String routeName) {
       return const AccountScreen();
     case '/createService':
       return const CreateServiceScreen();
+    case '/showService':
+      return const ServicesScreen();
     default:
       return const SplashScreen();
   }

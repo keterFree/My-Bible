@@ -72,7 +72,10 @@ class BaseScaffold extends StatelessWidget {
           ),
         ),
         Scaffold(
-          backgroundColor: Colors.transparent, // Background remains visible
+          backgroundColor: isDarkMode
+              ? darkModeColor ?? Colors.transparent
+              : lightModeColor ??
+                  Colors.transparent, // Background remains visible
           appBar: AppBar(
             iconTheme: Theme.of(context).iconTheme,
             title: Text(title),
@@ -88,8 +91,10 @@ class BaseScaffold extends StatelessWidget {
               children: [
                 _buildNavIcon(context, Icons.home, 'Home', '/home'),
                 _buildNavIcon(context, Icons.book, 'Bible', '/books'),
-                _buildNavIcon(context, Icons.add_home_outlined, 'Add service',
-                    '/createService'),
+                // _buildNavIcon(context, Icons.add_home_outlined, 'Add service',
+                //     '/createService'),
+                _buildNavIcon(context, Icons.add_home_outlined, 'show service',
+                    '/showService'),
                 _buildNavIcon(
                     context, Icons.bookmark, 'Bookmarks', '/bookmarks'),
                 _buildNavIcon(

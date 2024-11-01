@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:frontend/base_scaffold.dart';
 import 'package:frontend/constants.dart';
+import 'package:frontend/repository/show_services.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'scripture_picker.dart';
@@ -22,6 +23,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
   // Form Fields
   String title = '', location = '', theme = '';
   DateTime? date;
+  String? serviceTitle;
   String? serviceId; // Holds the service ID after creation.
   bool isUploading = false;
 
@@ -126,18 +128,18 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
         final request =
             http.MultipartRequest('POST', Uri.parse(ApiConstants.uploadImage))
               ..files.add(http.MultipartFile.fromBytes('file', fileBytes,
-                  filename: file.name));
+                  filename: serviceTitle));
 
         final response = await request.send();
         if (response.statusCode == 201) {
           final responseData =
               json.decode(await response.stream.bytesToString());
-          print('\nimage response ${responseData['_id']}\n');
+          print('\nimage response ${responseData}\n');
           setState(() {
             imageIds.add(responseData['_id']);
             uploadedImages.add(fileBytes);
           });
-          _showSnackBar('Image uploaded: ${file.name}');
+          _showSnackBar('Image uploaded: ${responseData['name']}');
         } else {
           _showSnackBar('Image upload failed: ${response.reasonPhrase}');
         }
@@ -188,8 +190,10 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
           body: jsonEncode(serviceData),
         );
         final data = json.decode(response.body);
-        setState(
-            () => serviceId = data['serviceId']); // Capture the service ID.
+        setState(() {
+          serviceId = data['serviceId'];
+          serviceTitle = data['title'];
+        }); // Capture the service ID.
         await _handleHttpResponse(
           response,
           'Service created successfully!',
@@ -298,6 +302,15 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Navigate to ServicesScreen if done is true
+    if (done) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showSnackBar('Service creation complete!');
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => ServicesScreen()),
+        );
+      });
+    }
     return BaseScaffold(
       title: 'Create Service',
       body: Padding(
@@ -376,49 +389,51 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
   }
 
   Widget _buildImageUploadSection() {
-    return Column(
-      children: [
-        Text(
-          'Upload relevant Images',
-          style: TextStyle(fontSize: 20),
-        ),
-        const Divider(),
-        Text('Uploaded Images: ${imageIds.length}'),
-        GridView.builder(
-          shrinkWrap: true,
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 150,
-            mainAxisSpacing: 2.0,
-            crossAxisSpacing: 2.0,
-            childAspectRatio: 1,
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Text(
+            'Upload relevant Images',
+            style: TextStyle(fontSize: 20),
           ),
-          itemCount: uploadedImages.length,
-          itemBuilder: (context, index) {
-            return GestureDetector(
-              onLongPress: () => _deleteImage(index),
-              onTap: () => _showSnackBar("Long press to remove image"),
-              child: Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8.0),
-                  child: Image.memory(
-                    uploadedImages[index],
-                    fit:
-                        BoxFit.cover, // Makes sure images fill the space nicely
+          const Divider(),
+          Text('Uploaded Images: ${imageIds.length}'),
+          GridView.builder(
+            shrinkWrap: true,
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 150,
+              mainAxisSpacing: 2.0,
+              crossAxisSpacing: 2.0,
+              childAspectRatio: 1,
+            ),
+            itemCount: uploadedImages.length,
+            itemBuilder: (context, index) {
+              return GestureDetector(
+                onLongPress: () => _deleteImage(index),
+                onTap: () => _showSnackBar("Long press to remove image"),
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: Image.memory(
+                      uploadedImages[index],
+                      fit: BoxFit
+                          .cover, // Makes sure images fill the space nicely
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            elevatedB('Upload Images', uploadImages),
-            elevatedB('Save Images', saveImages),
-          ],
-        ),
-      ],
+              );
+            },
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              elevatedB('Upload Images', uploadImages),
+              elevatedB('Save Images', saveImages),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
