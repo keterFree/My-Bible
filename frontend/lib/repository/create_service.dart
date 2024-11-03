@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:frontend/base_scaffold.dart';
 import 'package:frontend/constants.dart';
+import 'package:frontend/providers/token_provider.dart';
 import 'package:frontend/repository/show_services.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'scripture_picker.dart';
 
 class CreateServiceScreen extends StatefulWidget {
@@ -83,7 +85,8 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
       _showSnackBar(successMsg);
       onSuccess(); // Move to the next section
     } else {
-      _showSnackBar('Error: ${response.reasonPhrase}');
+      _showSnackBar(
+          'Error: ${json.decode(response.body)['message'] ?? response.reasonPhrase}');
     }
   }
 
@@ -108,6 +111,12 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
     });
   }
 
+  void showServicesSection() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => ServicesScreen()),
+    );
+  }
+
   void markProcessComplete() {
     setState(() {
       showbuildDevotionSection = false;
@@ -117,6 +126,11 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
 
   // Image Upload Logic
   Future<void> uploadImages() async {
+    final token = Provider.of<TokenProvider>(context, listen: false).token;
+    if (token == null) {
+      _showSnackBar("Token not found or expired, try loggin in.");
+      return;
+    }
     setState(() => isUploading = true);
     final result = await FilePicker.platform
         .pickFiles(type: FileType.image, allowMultiple: true);
@@ -127,8 +141,13 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
             file.bytes ?? await File(file.path!).readAsBytes();
         final request =
             http.MultipartRequest('POST', Uri.parse(ApiConstants.uploadImage))
-              ..files.add(http.MultipartFile.fromBytes('file', fileBytes,
-                  filename: serviceTitle));
+              ..headers['Authorization'] =
+                  'Bearer $token' // Add authorization header
+              ..files.add(http.MultipartFile.fromBytes(
+                'file',
+                fileBytes,
+                filename: serviceTitle,
+              ));
 
         final response = await request.send();
         if (response.statusCode == 201) {
@@ -175,6 +194,11 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
 
   // Submit Service and Retrieve ID
   Future<void> submitService() async {
+    final token = Provider.of<TokenProvider>(context, listen: false).token;
+    if (token == null) {
+      _showSnackBar("Token not found or expired, try loggin in.");
+      return;
+    }
     if (_formKey.currentState!.validate() && date != null) {
       final serviceData = {
         'title': title,
@@ -186,7 +210,10 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
       try {
         final response = await http.post(
           Uri.parse(ApiConstants.uploadService),
-          headers: {'Content-Type': 'application/json'},
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json'
+          },
           body: jsonEncode(serviceData),
         );
         final data = json.decode(response.body);
@@ -209,6 +236,11 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
 
   // Submit Sermon
   Future<void> submitSermon() async {
+    final token = Provider.of<TokenProvider>(context, listen: false).token;
+    if (token == null) {
+      _showSnackBar("Token not found or expired, try loggin in.");
+      return;
+    }
     if (serviceId == null) {
       _showSnackBar('Service must be created first!');
       return;
@@ -224,7 +256,10 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
     try {
       final response = await http.put(
         Uri.parse('${ApiConstants.uploadSermon}/$serviceId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json'
+        },
         body: jsonEncode(sermonData),
       );
       await _handleHttpResponse(
@@ -239,6 +274,11 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
 
   // Save Devotions
   Future<void> saveDevotions() async {
+    final token = Provider.of<TokenProvider>(context, listen: false).token;
+    if (token == null) {
+      _showSnackBar("Token not found or expired, try loggin in.");
+      return;
+    }
     if (devotionTitleController.text.isNotEmpty ||
         devotionContentController.text.isNotEmpty) {
       addDevotion();
@@ -251,13 +291,16 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
     try {
       final response = await http.put(
         Uri.parse('${ApiConstants.uploadDevotions}/$serviceId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json'
+        },
         body: jsonEncode(devotions),
       );
       await _handleHttpResponse(
         response,
         'Devotions saved successfully!',
-        showDevotionSection, // Move to devotion section
+        showServicesSection, // Move to devotion section
       );
     } catch (error) {
       _showSnackBar('An error occurred: $error');
@@ -265,6 +308,11 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
   }
 
   Future<void> saveImages() async {
+    final token = Provider.of<TokenProvider>(context, listen: false).token;
+    if (token == null) {
+      _showSnackBar("Token not found or expired, try loggin in.");
+      return;
+    }
     if (serviceId == null) {
       _showSnackBar('Service must be created first!');
       return;
@@ -273,7 +321,10 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
     try {
       final response = await http.put(
         Uri.parse('${ApiConstants.saveImages}/$serviceId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json'
+        },
         body: jsonEncode(imageIds),
       );
       await _handleHttpResponse(

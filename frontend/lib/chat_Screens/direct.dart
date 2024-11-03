@@ -142,7 +142,7 @@ class _DirectMessageScreenState extends State<DirectMessageScreen> {
   Widget build(BuildContext context) {
     final token = Provider.of<TokenProvider>(context, listen: false).token;
     if (token == null) {
-      print("Token not found or expired");
+      print("Token not found or expired, try loggin in.");
     }
 
     try {

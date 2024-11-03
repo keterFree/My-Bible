@@ -45,7 +45,7 @@ class _AccountScreenState extends State<AccountScreen> {
     try {
       final token = Provider.of<TokenProvider>(context, listen: false).token;
       if (token == null) {
-        throw Exception('Token not found or expired');
+        throw Exception('Token not found or expired, try loggin in.');
       }
 
       final jwt = JWT.decode(token);
@@ -84,7 +84,7 @@ class _AccountScreenState extends State<AccountScreen> {
 
     final token = Provider.of<TokenProvider>(context, listen: false).token;
     if (token == null) {
-      _logger.e("Token not found or expired");
+      _logger.e("Token not found or expired, try loggin in.");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Authentication error. Please log in again.'),

@@ -68,7 +68,7 @@ class _ChatHomeScreenState extends State<ChatHomeScreen>
   Future<void> _fetchUserDetails() async {
     final token = Provider.of<TokenProvider>(context, listen: false).token;
     if (token == null) {
-      print("Token not found or expired");
+      print("Token not found or expired, try loggin in.");
       throw Exception('Invalid token');
     }
 

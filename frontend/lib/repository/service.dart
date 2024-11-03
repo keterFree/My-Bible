@@ -4,10 +4,12 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:frontend/base_scaffold.dart';
 import 'package:frontend/constants.dart';
+import 'package:frontend/providers/token_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart'; // For formatting dates
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path/path.dart';
+import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:io'; // For File
 import 'package:path_provider/path_provider.dart'; // For saving images
@@ -24,6 +26,7 @@ class ServiceDetailsScreen extends StatefulWidget {
 class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
   late Future<Map<String, dynamic>> _futureService;
   int _currentPage = 0;
+  List allImages = [];
 
   @override
   void initState() {
@@ -53,6 +56,11 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final token = Provider.of<TokenProvider>(context, listen: false).token;
+    if (token == null) {
+      print("Token not found or expired, try loggin in.");
+    }
+
     return BaseScaffold(
       title: 'Service Details',
       body: FutureBuilder<Map<String, dynamic>>(
@@ -67,6 +75,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
           }
 
           final service = snapshot.data!;
+          allImages = service['images'];
           return Stack(
             children: [
               _buildGradientOverlay(),
@@ -89,7 +98,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                   const SizedBox(height: 16),
                   _buildThemes(service['themes'], context),
                   const SizedBox(height: 20),
-                  _buildImageGallery(service['images'], context),
+                  _buildImageGallery(allImages, context),
                   const SizedBox(height: 20),
                   _buildSermonList(service['sermons'], context),
                   const SizedBox(height: 20),
@@ -293,7 +302,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
             itemBuilder: (context, index) {
               final Uint8List imageBytes = _decodeImageBytes(images[index]);
               return GestureDetector(
-                onTap: () => _showFullScreenImage(context, imageBytes),
+                onTap: () =>
+                    _showFullScreenImage(context, imageBytes, images[index]),
                 child: ClipRRect(
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(10),
@@ -321,8 +331,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     );
   }
 
-// Full-screen dialog with download option
-  void _showFullScreenImage(BuildContext context, Uint8List imageBytes) {
+  void _showFullScreenImage(BuildContext context, Uint8List imageBytes, image) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -348,12 +357,25 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
               Positioned(
                 top: 20,
                 right: 20,
-                child: IconButton(
-                  icon: Icon(Icons.download, color: Colors.white, size: 30),
-                  onPressed: () async {
-                    await _downloadImage(imageBytes, context);
-                    Navigator.of(context).pop();
-                  },
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.download, color: Colors.white, size: 30),
+                      onPressed: () async {
+                        await _downloadImage(imageBytes, context);
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    IconButton(
+                      icon:
+                          Icon(Icons.delete, color: Colors.redAccent, size: 30),
+                      onPressed: () async {
+                        await _deleteImage(
+                            image['_id'], context); // Call delete function
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -361,6 +383,37 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
         );
       },
     );
+  }
+
+  void _showSnackBar(String message, BuildContext context) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _deleteImage(String imageId, BuildContext context) async {
+    final token = Provider.of<TokenProvider>(context, listen: false).token;
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Token not found or expired, try loggin in.")),
+      );
+      return;
+    }
+    final url =
+        '${ApiConstants.images}/$imageId'; // Adjust the endpoint if necessary
+    final response = await http.delete(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Image deleted successfully')),
+      );
+      setState(() {
+        allImages.removeWhere((image) => image['_id'] == imageId);
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete image')),
+      );
+    }
   }
 
   // Helper widget for the page indicators

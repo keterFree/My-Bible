@@ -1,5 +1,6 @@
 const multer = require('multer');
 const Image = require('../models/Image');
+const Service = require('../models/Service');
 
 // Configure Multer for in-memory storage
 const storage = multer.memoryStorage();
@@ -66,16 +67,25 @@ exports.getAllImages = async (req, res) => {
 // Delete an image by ID
 exports.deleteImage = async (req, res) => {
     try {
-        const image = await Image.findById(req.params.id);
+        const imageId = req.params.id;
+        const image = await Image.findById(imageId);
 
         if (!image) {
             return res.status(404).json({ message: 'Image not found' });
         }
 
-        await Image.findByIdAndDelete(req.params.id); // Delete from DB
-        res.status(200).json({ message: 'Image deleted successfully' });
+        // Remove imageId from any Service that contains it
+        await Service.updateMany(
+            { images: imageId },
+            { $pull: { images: imageId } }
+        );
+
+        // Delete the image document
+        await Image.findByIdAndDelete(imageId);
+        res.status(200).json({ message: 'Image deleted successfully and removed from associated services' });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: `Failed to delete image: ${error.message}` });
     }
 };
+
 

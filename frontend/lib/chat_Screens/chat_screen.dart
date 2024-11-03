@@ -38,7 +38,7 @@ abstract class _BaseMessageScreenState<T extends BaseMessageScreen>
   void decodeUserFromToken() {
     final token = Provider.of<TokenProvider>(context, listen: false).token;
     if (token == null) {
-      print("Token not found or expired");
+      print("Token not found or expired, try loggin in.");
       return;
     }
 
