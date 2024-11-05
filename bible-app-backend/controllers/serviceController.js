@@ -28,7 +28,9 @@ const createSermons = async (sermons) => {
             const scriptureIds = await createScriptures(sermon.scriptures);
             // const points = sermon.notes;
             // console.log(`sermon notes: ${points}`)
-            const newSermon = new Sermon({ ...sermon, scriptures: scriptureIds });
+            const uniqueScriptureIds = [...new Set(scriptureIds)];
+
+            const newSermon = new Sermon({ ...sermon, scriptures: uniqueScriptureIds });
             await newSermon.save();
             return newSermon._id;
         })
@@ -39,7 +41,8 @@ const createDevotions = async (devotions) => {
     return await Promise.all(
         devotions.map(async (devotion) => {
             const scriptureIds = await createScriptures(devotion.scriptures);
-            const newDevotion = new Devotion({ ...devotion, scriptures: scriptureIds });
+            const uniqueScriptureIds = [...new Set(scriptureIds)];
+            const newDevotion = new Devotion({ ...devotion, scriptures: uniqueScriptureIds });
             await newDevotion.save();
             return newDevotion._id;
         })

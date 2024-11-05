@@ -1,6 +1,25 @@
 const Sermon = require('../models/Sermon');
 const Scripture = require('../models/Scripture');
 
+
+const createScriptures = async (scriptures) => {
+    return await Promise.all(
+        scriptures.map(async ({ book, chapter, verseNumbers }) => {
+            let scripture = await Scripture.findOne({
+                book,
+                chapter,
+                verseNumbers: { $all: verseNumbers },
+            });
+
+            if (!scripture) {
+                scripture = new Scripture({ book, chapter, verseNumbers });
+                await scripture.save();
+            }
+            return scripture._id;
+        })
+    );
+};
+
 // Create a new sermon
 exports.createSermon = async (req, res) => {
     try {
@@ -75,11 +94,13 @@ exports.getAllSermons = async (req, res) => {
 // Update a sermon
 exports.updateSermon = async (req, res) => {
     try {
-        const { title, speaker, notes, scriptureIds } = req.body;
+        const { title, speaker, notes, scriptures } = req.body;
+        const scriptureIds = await createScriptures(scriptures);
+        const uniqueScriptureIds = [...new Set(scriptureIds)];
 
         const updatedSermon = await Sermon.findByIdAndUpdate(
             req.params.id,
-            { title, speaker, notes, scriptures: scriptureIds },
+            { title, speaker, notes, scriptures: uniqueScriptureIds },
             { new: true }
         );
 

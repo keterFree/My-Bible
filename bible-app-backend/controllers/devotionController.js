@@ -1,5 +1,35 @@
 const Devotion = require('../models/Devotion');
 const Scripture = require('../models/Scripture');
+const mongoose = require('mongoose');
+const createScriptures = async (scriptures) => {
+    return await Promise.all(
+        scriptures.map(async (scripture) => {
+            if (scripture._id) {
+                // Check if `_id` is already an `ObjectId`
+                if (typeof scripture._id === 'string' && mongoose.Types.ObjectId.isValid(scripture._id)) {
+                    return new mongoose.Types.ObjectId(scripture._id);
+                }
+                return scripture._id;  // Already an ObjectId
+            } else {
+                // Search for or create the scripture document
+                const { book, chapter, verseNumbers } = scripture;
+                let foundScripture = await Scripture.findOne({
+                    book,
+                    chapter,
+                    verseNumbers: { $all: verseNumbers },
+                });
+
+                if (!foundScripture) {
+                    foundScripture = new Scripture({ book, chapter, verseNumbers });
+                    await foundScripture.save();
+                }
+
+                return foundScripture._id;
+            }
+        })
+    );
+};
+
 
 // Create a new devotion
 exports.createDevotion = async (req, res) => {
@@ -46,14 +76,26 @@ exports.getAllDevotions = async (req, res) => {
     }
 };
 
-// Update a devotion
 exports.updateDevotion = async (req, res) => {
     try {
-        const { title, content, scriptureIds } = req.body;
+        const { title, content, scriptures } = req.body;
+
+        // Create scriptures and get only their `_id`s
+        const scriptureIds = await createScriptures(scriptures);
+        const uniqueScriptureIds = [...new Set(scriptureIds)];
+        console.log(`uniqueScriptureIds: ${uniqueScriptureIds} `)
+        // Ensure only valid ObjectId format is used
+        const validScriptureIds = uniqueScriptureIds.map(id => {
+            if (mongoose.Types.ObjectId.isValid(id)) {
+                return new mongoose.Types.ObjectId(id);
+            } else {
+                throw new Error(`Invalid ObjectId format for id: ${id}`);
+            }
+        });
 
         const updatedDevotion = await Devotion.findByIdAndUpdate(
             req.params.id,
-            { title, content, scriptures: scriptureIds },
+            { title, content, scriptures: uniqueScriptureIds },
             { new: true }
         );
 
@@ -63,9 +105,11 @@ exports.updateDevotion = async (req, res) => {
 
         res.status(200).json(updatedDevotion);
     } catch (error) {
+        console.error('Error updating devotion:', error.message);
         res.status(500).json({ message: error.message });
     }
 };
+
 
 // Delete a devotion
 exports.deleteDevotion = async (req, res) => {

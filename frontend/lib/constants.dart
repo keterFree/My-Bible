@@ -16,6 +16,8 @@ class ApiConstants {
   static const String uploadImage = '$authbaseUrl/api/images/upload';
   static const String uploadService = '$authbaseUrl/api/services';
   static const String uploadSermon = '$authbaseUrl/api/services/sermons';
+  static const String sermons = '$authbaseUrl/api/sermons';
+  static const String devotions = '$authbaseUrl/api/devotions';
   static const String uploadDevotions = '$authbaseUrl/api/services/devotions';
   static const String saveImages = '$authbaseUrl/api/services/images';
   static const String services = '$authbaseUrl/api/services';
@@ -301,6 +303,6 @@ class Lists {
     "Wisdom",
     "Witnessing",
     "Worry",
-    "Worshi",
+    "Worship",
   ];
 }

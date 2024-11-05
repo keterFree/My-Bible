@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/base_scaffold.dart';
 import 'package:frontend/constants.dart';
 import 'package:frontend/providers/token_provider.dart';
+import 'package:frontend/repository/edit_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart'; // For formatting dates
 import 'package:google_fonts/google_fonts.dart';
@@ -116,18 +117,44 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Devotions:',
-            style: GoogleFonts.roboto(
-              textStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Devotions:',
+                style: GoogleFonts.roboto(
+                  textStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                )),
+            IconButton(
+              icon: Icon(Icons.edit_note_outlined),
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditServiceScreen(
+                      serviceId: widget.serviceId,
+                      editNo: 4,
+                    ), // Create this screen
                   ),
-            )),
+                );
+              },
+            )
+          ],
+        ),
         ...devotions.map((devotion) => FutureBuilder<String>(
               future: _fetchScriptures(devotion['scriptures']),
               builder: (context, snapshot) {
                 return ListTile(
-                  title: Text(devotion['title'], style: _textStyle(context)),
+                  title: Text(devotion['title'].toUpperCase(),
+                      style: GoogleFonts.roboto(
+                        textStyle:
+                            Theme.of(context).textTheme.bodyMedium!.copyWith(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                      )),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -136,6 +163,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                       if (snapshot.hasData)
                         Text(
                           snapshot.data!,
+                          textAlign: TextAlign.justify,
                           style: Theme.of(context)
                               .textTheme
                               .bodyLarge!
@@ -154,19 +182,45 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Sermon:',
-            style: GoogleFonts.roboto(
-              textStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Sermon:',
+                style: GoogleFonts.roboto(
+                  textStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                )),
+            IconButton(
+              icon: Icon(Icons.edit_note_outlined),
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditServiceScreen(
+                      serviceId: widget.serviceId,
+                      editNo: 3,
+                    ), // Create this screen
                   ),
-            )),
+                );
+              },
+            )
+          ],
+        ),
         ...sermons.map((sermon) => FutureBuilder<String>(
               future: _fetchScriptures(sermon['scriptures']),
               builder: (context, snapshot) {
                 // print(snapshot);
                 return ListTile(
-                  title: Text(sermon['title'], style: _textStyle(context)),
+                  title: Text(sermon['title'].toUpperCase(),
+                      style: GoogleFonts.roboto(
+                        textStyle:
+                            Theme.of(context).textTheme.bodyMedium!.copyWith(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                      )),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -175,6 +229,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                       if (snapshot.hasData)
                         Text(
                           snapshot.data!,
+                          textAlign: TextAlign.justify,
                           style: Theme.of(context)
                               .textTheme
                               .bodyLarge!
@@ -383,11 +438,6 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
         );
       },
     );
-  }
-
-  void _showSnackBar(String message, BuildContext context) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _deleteImage(String imageId, BuildContext context) async {
