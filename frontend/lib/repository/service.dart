@@ -28,6 +28,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
   late Future<Map<String, dynamic>> _futureService;
   int _currentPage = 0;
   List allImages = [];
+  String serviceTitle = '';
 
   @override
   void initState() {
@@ -77,21 +78,42 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
 
           final service = snapshot.data!;
           allImages = service['images'];
+          serviceTitle = service['title'];
           return Stack(
             children: [
               _buildGradientOverlay(),
               ListView(
                 padding: const EdgeInsets.all(16.0),
                 children: [
-                  Text(
-                    service['title'],
-                    style: GoogleFonts.lato(
-                      textStyle:
-                          Theme.of(context).textTheme.bodyLarge!.copyWith(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                              ),
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        service['title'],
+                        style: GoogleFonts.lato(
+                          textStyle:
+                              Theme.of(context).textTheme.bodyLarge!.copyWith(
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.edit_note_outlined),
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditServiceScreen(
+                                serviceTitle: serviceTitle,
+                                serviceId: widget.serviceId,
+                                editNo: 1,
+                              ), // Create this screen
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   _buildDate(service['date'], context),
@@ -134,6 +156,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => EditServiceScreen(
+                      serviceTitle: serviceTitle,
                       serviceId: widget.serviceId,
                       editNo: 4,
                     ), // Create this screen
@@ -199,6 +222,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => EditServiceScreen(
+                      serviceTitle: serviceTitle,
                       serviceId: widget.serviceId,
                       editNo: 3,
                     ), // Create this screen
@@ -345,34 +369,56 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
 
     return Column(
       children: [
-        SizedBox(
-          height: MediaQuery.of(context).size.height / 2,
-          child: PageView.builder(
-            itemCount: images.length,
-            onPageChanged: (int page) {
-              setState(() {
-                _currentPage = page;
-              });
-            },
-            itemBuilder: (context, index) {
-              final Uint8List imageBytes = _decodeImageBytes(images[index]);
-              return GestureDetector(
-                onTap: () =>
-                    _showFullScreenImage(context, imageBytes, images[index]),
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(10),
-                    bottomRight: Radius.circular(10),
-                  ),
-                  child: Image.memory(
-                    imageBytes,
-                    fit: BoxFit.cover,
-                    width: MediaQuery.of(context).size.width,
-                  ),
-                ),
-              );
-            },
-          ),
+        Stack(
+          children: [
+            SizedBox(
+              height: MediaQuery.of(context).size.height / 2,
+              child: PageView.builder(
+                itemCount: images.length,
+                onPageChanged: (int page) {
+                  setState(() {
+                    _currentPage = page;
+                  });
+                },
+                itemBuilder: (context, index) {
+                  final Uint8List imageBytes = _decodeImageBytes(images[index]);
+                  return GestureDetector(
+                    onTap: () => _showFullScreenImage(
+                        context, imageBytes, images[index]),
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(10),
+                        bottomRight: Radius.circular(10),
+                      ),
+                      child: Image.memory(
+                        imageBytes,
+                        fit: BoxFit.cover,
+                        width: MediaQuery.of(context).size.width,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Align(
+              alignment: Alignment.topRight,
+              child: IconButton(
+                icon: Icon(Icons.edit_note_outlined, size: 40),
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditServiceScreen(
+                        serviceTitle: serviceTitle,
+                        serviceId: widget.serviceId,
+                        editNo: 2,
+                      ), // Create this screen
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         Row(

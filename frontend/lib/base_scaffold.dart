@@ -96,9 +96,12 @@ class BaseScaffold extends StatelessWidget {
                 _buildNavIcon(context, Icons.add_home_outlined, 'show service',
                     '/showService'),
                 _buildNavIcon(
-                    context, Icons.bookmark, 'Bookmarks', '/bookmarks'),
-                _buildNavIcon(
-                    context, Icons.event_rounded, 'My Events', '/homeEvents'),
+                    //     context, Icons.bookmark, 'Bookmarks', '/bookmarks'),
+                    // _buildNavIcon(
+                    context,
+                    Icons.event_rounded,
+                    'My Events',
+                    '/homeEvents'),
                 _buildNavIcon(
                     context, Icons.account_circle, 'My Account', '/account'),
               ],

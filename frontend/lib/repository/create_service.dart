@@ -449,6 +449,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
           ),
           const Divider(),
           Text('Uploaded Images: ${imageIds.length}'),
+          Text('Long press to remove uploaded Images'),
           GridView.builder(
             shrinkWrap: true,
             gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(

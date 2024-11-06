@@ -2,6 +2,8 @@ import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:frontend/constants.dart';
+import 'package:frontend/lit_Screens/book/bookmarks.dart';
+import 'package:frontend/lit_Screens/book/highlights.dart';
 import 'package:frontend/providers/token_provider.dart';
 import 'package:frontend/base_scaffold.dart';
 import 'package:http/http.dart' as http;
@@ -208,7 +210,63 @@ class _AccountScreenState extends State<AccountScreen> {
                   ),
                 ],
               ),
-
+              Row(
+                children: [
+                  Flexible(
+                    flex: 1,
+                    child: ListTile(
+                      tileColor: Theme.of(context)
+                          .appBarTheme
+                          .titleTextStyle!
+                          .color!
+                          .withOpacity(0.1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      leading: Icon(
+                        Icons.bookmark,
+                        color:
+                            Theme.of(context).appBarTheme.titleTextStyle!.color,
+                      ),
+                      title: Text('My bookmarks',
+                          style: Theme.of(context).textTheme.bodyMedium),
+                      onTap: () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                              builder: (context) => BookmarksScreen()),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Flexible(
+                    flex: 1,
+                    child: ListTile(
+                      tileColor: Theme.of(context)
+                          .appBarTheme
+                          .titleTextStyle!
+                          .color!
+                          .withOpacity(0.1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      leading: Icon(
+                        Icons.highlight,
+                        color:
+                            Theme.of(context).appBarTheme.titleTextStyle!.color,
+                      ),
+                      title: Text('My highlights',
+                          style: Theme.of(context).textTheme.bodyMedium),
+                      onTap: () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                              builder: (context) => HighlightsScreen()),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 16),
               // Clickable tile for editing name
               ListTile(

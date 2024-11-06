@@ -106,6 +106,35 @@ class _ServicesScreenState extends State<ServicesScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    elevatedB('Create Service ', () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              CreateServiceScreen(), // Pass the resolved list
+                        ),
+                      );
+                    }),
+                    elevatedB(
+                      'All services',
+                      () async {
+                        // Wait for the services to be fetched
+                        final services = await _futureServices;
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AllServicesScreen(
+                                services: services), // Pass the resolved list
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 10),
                 _buildCalendar(snapshot.data!),
                 const SizedBox(height: 8),

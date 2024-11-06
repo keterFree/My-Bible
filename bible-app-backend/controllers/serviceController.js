@@ -102,6 +102,39 @@ exports.createService = async (req, res) => {
         res.status(500).json({ message: `Failed to create service: ${error.message}` });
     }
 };
+exports.updateService = async (req, res) => {
+    try {
+        const { title, date, location, theme } = req.body;
+        const serviceId = req.params.id;
+
+        if (!title && !date && !location && !theme) {
+            return res.status(400).json({ message: 'At least one field (title, date, location, or theme) is required to update.' });
+        }
+
+        // Build the update object dynamically
+        let updateData = {};
+        if (title) updateData.title = title;
+        if (date) updateData.date = date;
+        if (location) updateData.location = location;
+        if (theme) updateData.themes = [theme];
+
+        const updatedService = await Service.findByIdAndUpdate(
+            serviceId,
+            updateData,
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedService) {
+            return res.status(404).json({ message: 'Service not found' });
+        }
+
+        res.status(200).json({ message: 'Service updated successfully', updatedService });
+    } catch (error) {
+        console.error(`Failed to update service: ${error.message}`);
+        res.status(500).json({ message: `Failed to update service: ${error.message}` });
+    }
+};
+
 
 exports.updateServiceImages = async (req, res) => {
     try {
@@ -158,30 +191,37 @@ exports.updateServiceSermons = async (req, res) => {
 
 exports.updateServiceDevotions = async (req, res) => {
     try {
+        // Check if the request body contains devotions
         const devotions = Array.isArray(req.body) && req.body.length > 0 ? req.body : [];
 
         const { serviceId } = req.params;
 
+        // Create new devotions and get their IDs
         const devotionIds = await createDevotions(devotions);
-        const updatedService = await Service.findByIdAndUpdate(
-            serviceId,
-            { devotions: devotionIds },
-            { new: true }
-        );
 
-        if (!updatedService) {
+        // Find the service and retrieve existing devotions
+        const service = await Service.findById(serviceId);
+        if (!service) {
             return res.status(404).json({ message: 'Service not found' });
         }
 
+        // Concatenate new devotion IDs with existing ones
+        const updatedDevotions = [...service.devotions, ...devotionIds];
+
+        // Update the service with the combined devotions list
+        service.devotions = updatedDevotions;
+        await service.save();
+
         res.status(200).json({
             message: 'Service devotions updated successfully',
-            updatedService,
+            updatedService: service,
         });
     } catch (error) {
         console.error(`Failed to update devotions: ${error.message}`);
         res.status(500).json({ message: `Failed to update devotions: ${error.message}` });
     }
 };
+
 
 
 
@@ -223,35 +263,7 @@ exports.getAllServices = async (req, res) => {
     }
 };
 
-// Update a service
-exports.updateService = async (req, res) => {
-    try {
-        const { title, date, location, themes, imageIds, sermonIds, devotionIds } = req.body;
 
-        const updatedService = await Service.findByIdAndUpdate(
-            req.params.id,
-            {
-                title,
-                date,
-                location,
-                themes,
-                images: imageIds,
-                sermons: sermonIds,
-                devotions: devotionIds,
-            },
-            { new: true }
-        );
-
-        if (!updatedService) {
-            return res.status(404).json({ message: 'Service not found' });
-        }
-
-        res.status(200).json(updatedService);
-    } catch (error) {
-        console.error(`Failed to update service: ${error.message}`);
-        res.status(500).json({ message: `Failed to update service: ${error.message}` });
-    }
-};
 
 // Delete a service
 exports.deleteService = async (req, res) => {

@@ -10,7 +10,7 @@ const upload = multer({ storage });
 exports.uploadImage = async (req, res) => {
     try {
         const file = req.file; // Image uploaded as 'file'
-
+        // console.log(`file: ${file} `);
         if (!file) {
             return res.status(400).json({ message: 'No file uploaded' });
         }

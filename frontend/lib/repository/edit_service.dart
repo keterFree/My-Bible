@@ -16,10 +16,14 @@ import 'package:provider/provider.dart';
 // Edit Service Screen that displays a specific section based on edit_no
 class EditServiceScreen extends StatefulWidget {
   final String serviceId;
+  final String serviceTitle;
   final int editNo;
 
   const EditServiceScreen(
-      {super.key, required this.serviceId, required this.editNo});
+      {super.key,
+      required this.serviceTitle,
+      required this.serviceId,
+      required this.editNo});
 
   @override
   _EditServiceScreenState createState() => _EditServiceScreenState();
@@ -52,8 +56,8 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
   List devotions = [];
 
   // Controllers and Lists
-  final List<String> imageIds = [];
-  final List<Uint8List> uploadedImages = [];
+  List<String> imageIds = [];
+  List<Uint8List> uploadedImages = [];
   final TextEditingController _pointController = TextEditingController();
   TextEditingController devotionTitleController = TextEditingController();
   TextEditingController devotionContentController = TextEditingController();
@@ -67,6 +71,8 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
   void initState() {
     super.initState();
     serviceId = widget.serviceId;
+    serviceTitle = widget.serviceTitle;
+    print('serviceTitle: $serviceTitle');
     _fetchServiceData();
     showSection();
   }
@@ -78,10 +84,25 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
     print(widget.editNo);
     // Populate fields according to editNo
     if (widget.editNo == 1) {
+      print(serviceData['date']);
+      setState(() {
+        title = serviceData['title'];
+        date = DateTime.parse(serviceData['date']);
+        location = serviceData['location'];
+        theme = serviceData['themes'][0];
+      });
     } else if (widget.editNo == 2) {
-      // images
+      setState(() {
+        isLoading = true;
+        imageIds = (serviceData['images'] as List)
+            .map((image) => image['_id'] as String)
+            .toList();
+        uploadedImages = (serviceData['images'] as List)
+            .map((image) => base64.decode(image['imageData'] as String))
+            .toList();
+        isLoading = false;
+      });
     } else if (widget.editNo == 3) {
-      // sermon
       print(serviceData['sermons']);
       final sermon = serviceData['sermons'][0];
       setState(() {
@@ -204,6 +225,7 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
       for (var file in result.files) {
         Uint8List fileBytes =
             file.bytes ?? await File(file.path!).readAsBytes();
+        // print('fileBytes: $fileBytes');
         final request =
             http.MultipartRequest('POST', Uri.parse(ApiConstants.uploadImage))
               ..headers['Authorization'] =
@@ -273,8 +295,8 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
       };
 
       try {
-        final response = await http.post(
-          Uri.parse(ApiConstants.uploadService),
+        final response = await http.put(
+          Uri.parse('${ApiConstants.uploadService}/$serviceId'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json'
@@ -283,10 +305,9 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
         );
         final data = json.decode(response.body);
         setState(() {
-          serviceId = data['serviceId'];
           serviceTitle = data['title'];
         }); // Capture the service ID.
-        await _handleHttpResponse(response, 'Service created successfully!',
+        await _handleHttpResponse(response, 'Service edited successfully!',
             () => Navigator.of(context).pop());
       } catch (error) {
         _showSnackBar('An error occurred: $error');
@@ -339,21 +360,24 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
   }
 
   // Save Devotions
-  Future<void> saveDevotions() async {
+  Future<void> addDevotion() async {
     final token = Provider.of<TokenProvider>(context, listen: false).token;
     if (token == null) {
       _showSnackBar("Token not found or expired, try loggin in.");
       return;
     }
-    if (devotionTitleController.text.isNotEmpty ||
-        devotionContentController.text.isNotEmpty) {
-      // addDevotion();
-    }
+
     if (serviceId == null) {
       _showSnackBar('Service must be created first!');
       return;
     }
-
+    final devotionData = [
+      {
+        'title': devotionTitleController.text,
+        'content': devotionContentController.text,
+        'scriptures': selectedDevotionScripture ?? [],
+      }
+    ];
     try {
       final response = await http.put(
         Uri.parse('${ApiConstants.uploadDevotions}/$serviceId'),
@@ -361,7 +385,7 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json'
         },
-        body: jsonEncode(devotions),
+        body: jsonEncode(devotionData),
       );
       await _handleHttpResponse(
         response,
@@ -448,6 +472,20 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
     }
   }
 
+  String getTitle() {
+    if (widget.editNo == 1) {
+      return 'Edit Service Details';
+    } else if (widget.editNo == 2) {
+      return 'Edit Images';
+    } else if (widget.editNo == 3) {
+      return 'Edit Sermon Details';
+    } else if (widget.editNo == 4) {
+      return 'Edit Devotions';
+    } else {
+      return 'Default Title';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Navigate to ServicesScreen if done is true
@@ -460,7 +498,7 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
       });
     }
     return BaseScaffold(
-      title: 'Create Service',
+      title: getTitle(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -489,7 +527,7 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
         _buildTextField(
             theme.isEmpty ? 'Theme' : theme, (value) => theme = value),
         _buildDatePicker(),
-        elevatedB('Create Service', submitService),
+        elevatedB('Save Changes', submitService),
       ],
     );
   }
@@ -500,7 +538,7 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
       decoration: InputDecoration(
           labelText: label, labelStyle: Theme.of(context).textTheme.bodyMedium),
       onChanged: onChanged,
-      validator: (value) => value!.isEmpty ? 'Please enter $label' : null,
+      // validator: (value) => value!.isEmpty ? 'Please enter $label' : null,
     );
   }
 
@@ -532,6 +570,7 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
           ),
           const Divider(),
           Text('Uploaded Images: ${imageIds.length}'),
+          Text('Long press to remove uploaded Images'),
           GridView.builder(
             shrinkWrap: true,
             gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
@@ -563,6 +602,11 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               elevatedB('Upload Images', uploadImages),
+              if (isLoading)
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: CircularProgressIndicator(),
+                ),
               elevatedB('Save Images', saveImages),
             ],
           ),
@@ -720,37 +764,47 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
     );
   }
 
-  ListView devotionsList() {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: devotions.length,
-      itemBuilder: (context, index) {
-        return ListTile(
-          onTap: () {
-            setState(() {
-              currentDevotion = devotions[index];
-            });
+  Column devotionsList() {
+    return Column(
+      children: [
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: devotions.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              onTap: () {
+                setState(() {
+                  currentDevotion = devotions[index];
+                });
+              },
+              title: Text(devotions[index]['title'],
+                  style: Theme.of(context).textTheme.bodyMedium),
+              subtitle: Text(devotions[index]['content'],
+                  style: Theme.of(context).textTheme.bodyMedium),
+              leading: Icon(
+                Icons.note_alt_rounded,
+                color: Theme.of(context).textTheme.bodyMedium!.color,
+              ),
+              trailing: IconButton(
+                icon: Icon(
+                  Icons.delete_outline,
+                  color: Theme.of(context).textTheme.bodyMedium!.color,
+                ),
+                onPressed: () {
+                  setState(() => devotions.removeAt(index));
+                },
+              ),
+            );
           },
-          title: Text(devotions[index]['title'],
-              style: Theme.of(context).textTheme.bodyMedium),
-          subtitle: Text(devotions[index]['content'],
-              style: Theme.of(context).textTheme.bodyMedium),
-          leading: Icon(
-            Icons.note_alt_rounded,
-            color: Theme.of(context).textTheme.bodyMedium!.color,
-          ),
-          trailing: IconButton(
-            icon: Icon(
-              Icons.delete_outline,
-              color: Theme.of(context).textTheme.bodyMedium!.color,
-            ),
-            onPressed: () {
-              setState(() => devotions.removeAt(index));
-            },
-          ),
-        );
-      },
+        ),
+        // addDevotion
+        elevatedB('Add Devotion', () {
+          setState(() {
+            currentDevotion = {"title": "", "content": "", "scriptures": []};
+          });
+        }),
+      ],
     );
   }
 
@@ -772,9 +826,10 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
           controller: devotionTitleController,
           // initialValue:currentDevotion!['title'],
           decoration: InputDecoration(
-            labelText: currentDevotion == null
-                ? 'Devotion Title'
-                : currentDevotion!['title'],
+            labelText:
+                currentDevotion == null || currentDevotion!['title'].isEmpty
+                    ? 'Devotion Title'
+                    : currentDevotion!['title'],
             labelStyle: Theme.of(context).textTheme.bodyMedium,
           ),
         ),
@@ -785,12 +840,14 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
           setState(() => selectedDevotionScripture = scripture);
         }),
         SizedBox(height: 10),
-
-        // elevatedB('Add Devotion', addDevotion),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            elevatedB('Save Changes', saveDevotion),
+            elevatedB(
+                currentDevotion!['_id'] == null
+                    ? 'Save Devotion'
+                    : 'Save Changes',
+                currentDevotion!['_id'] == null ? addDevotion : saveDevotion),
           ],
         ),
       ],
