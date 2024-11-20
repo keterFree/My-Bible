@@ -185,6 +185,43 @@ const editProgramItem = async (req, res) => {
   }
 };
 
+// Edit an entire event (editEvent)
+const editEvent = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { title, description, theme, date, time, venue, keyGuests, program } = req.body;
+
+    // Ensure required fields are provided
+    if (!title || !description || !date || !time || !venue) {
+      return res.status(400).send({ error: 'Please provide all required fields for the event' });
+    }
+
+    // Find the event by ID
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).send({ error: 'Event not found' });
+    }
+
+    // Update the event fields
+    event.title = title;
+    event.description = description;
+    event.theme = theme;
+    event.date = date;
+    event.time = time;
+    event.venue = venue;
+    event.keyGuests = keyGuests;
+    event.program = program; // Assuming the program array is provided in the request
+
+    // Save the updated event
+    await event.save();
+
+    res.status(200).send(event); // Return the updated event
+  } catch (error) {
+    console.error('Error editing event:', error);
+    res.status(500).send({ error: 'An error occurred while editing the event' });
+  }
+};
+
 
 // Delete an event by ID (deleteEvent)
 const deleteEvent = async (req, res) => {
@@ -212,6 +249,7 @@ module.exports = {
   getEventById,  // Added here
   addProgramItem,
   editProgramItem,
+  editEvent,
   deleteEvent,
 };
 

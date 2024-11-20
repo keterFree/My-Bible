@@ -10,6 +10,9 @@ import 'package:frontend/providers/token_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart'; // Add this import
+import 'package:intl/intl.dart';
 
 class EventListScreen extends StatefulWidget {
   const EventListScreen({super.key});
@@ -94,6 +97,102 @@ class _EventListScreenState extends State<EventListScreen> {
     );
   }
 
+  void _printEvents() async {
+    final pdf = pw.Document();
+
+    // Add content to PDF
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            mainAxisAlignment: pw.MainAxisAlignment.start,
+            children: [
+              pw.Text('List of Events',
+                  style: pw.TextStyle(
+                      fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 20),
+              // Loop through the events and display details
+              ...events.map(
+                (event) {
+                  // Format date
+                  final formattedDate = DateFormat('MMM d yy', 'en_US')
+                      .format(DateTime.parse(event['date']))
+                      .toUpperCase();
+
+                  return pw.Padding(
+                    padding: pw.EdgeInsets.only(bottom: 20),
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        // Event Title
+                        pw.Text('Title: ${event['title']}',
+                            style: pw.TextStyle(
+                                fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                        pw.SizedBox(height: 5),
+
+                        // Event Date
+                        pw.Text('Date: $formattedDate',
+                            style: pw.TextStyle(fontSize: 14)),
+                        pw.SizedBox(height: 5),
+
+                        // Organizers
+                        pw.Text(
+                          'Organized by: ${event['planners']?.map((planner) => planner['name'])?.join(', ') ?? 'N/A'}',
+                          style: pw.TextStyle(fontSize: 14),
+                        ),
+                        pw.SizedBox(height: 5),
+
+                        // Key Guests
+                        pw.Text(
+                          'Key Guests: ${event['keyGuests']?.join(', ') ?? 'N/A'}',
+                          style: pw.TextStyle(fontSize: 14),
+                        ),
+                        pw.SizedBox(height: 5),
+
+                        // Venue
+                        pw.Text(
+                          'Venue: ${event['venue'] ?? 'N/A'}',
+                          style: pw.TextStyle(fontSize: 14),
+                        ),
+                        pw.SizedBox(height: 5),
+
+                        // Start Time
+                        pw.Text(
+                          'Start Time: ${event['time'] ?? 'N/A'}',
+                          style: pw.TextStyle(fontSize: 14),
+                        ),
+                        pw.SizedBox(height: 5),
+
+                        // Event Description
+                        pw.Text(
+                          'Description: ${event['description'] ?? 'No description available'}',
+                          style: pw.TextStyle(fontSize: 14),
+                        ),
+                        pw.SizedBox(height: 5),
+
+                        // Event Theme
+                        pw.Text(
+                          'Theme: ${event['theme'] ?? 'No theme specified'}',
+                          style: pw.TextStyle(fontSize: 14),
+                        ),
+                        pw.SizedBox(height: 10),
+                      ],
+                    ),
+                  );
+                },
+              ).toList(),
+            ],
+          );
+        },
+      ),
+    );
+
+    // Save PDF to a file and provide download option
+    await Printing.layoutPdf(
+      onLayout: (format) async => pdf.save(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // bool isDarkMode =
@@ -103,6 +202,13 @@ class _EventListScreenState extends State<EventListScreen> {
     return BaseScaffold(
       darkModeColor: Colors.black.withOpacity(0.6),
       title: 'Church Events',
+      appBarActions: [
+        IconButton(
+          icon: const Icon(Icons.print),
+          onPressed: _printEvents,
+          tooltip: 'Print Event List',
+        ),
+      ],
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : hasError

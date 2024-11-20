@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/events/esdit_event.dart';
 import 'package:frontend/events/program.dart';
 import 'package:frontend/base_scaffold.dart';
 import 'package:intl/intl.dart';
@@ -20,30 +21,54 @@ class EventDetailScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Align(
-                alignment: Alignment.topRight,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => ProgramScreen(
-                          event: event, // Pass the program list
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (context) => EditEventScreen(
+                            eventId: event['_id'], // Pass the program list
+                          ),
                         ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.0),
+                      // Add any default style properties here
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0), // example padding
                     ),
-                    // Add any default style properties here
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0), // example padding
+                    child: const Text(
+                      "Edit program",
+                    ),
                   ),
-                  child: const Text(
-                    "Program",
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => ProgramScreen(
+                            event: event, // Pass the program list
+                          ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      // Add any default style properties here
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0), // example padding
+                    ),
+                    child: const Text(
+                      "Program",
+                    ),
                   ),
-                ),
+                ],
               ),
               const SizedBox(height: 10),
               Text(

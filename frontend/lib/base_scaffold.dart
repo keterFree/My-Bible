@@ -90,7 +90,7 @@ class BaseScaffold extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildNavIcon(context, Icons.home, 'Home', '/home'),
-                _buildNavIcon(context, Icons.book, 'Bible', '/books'),
+                _buildNavIcon(context, Icons.book, 'Bible', '/lit_menu'),
                 // _buildNavIcon(context, Icons.add_home_outlined, 'Add service',
                 //     '/createService'),
                 _buildNavIcon(context, Icons.add_home_outlined, 'show service',
