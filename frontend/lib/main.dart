@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:frontend/chat_Screens/home.dart';
 import 'package:frontend/events/events_list.dart';
-import 'package:frontend/lit_Screens/lit_menu.dart';
 import 'package:frontend/providers/token_provider.dart';
 import 'package:frontend/lit_Screens/account.dart';
 import 'package:frontend/auth/splash.dart';
@@ -56,7 +55,6 @@ class MyApp extends StatelessWidget {
         '/': (context) => const SplashScreen(),
         '/home': (context) => const HomeScreen(),
         '/books': (context) => const BooksScreen(),
-        '/lit_menu': (context) => const BibleMenuScreen(),
         '/highlights': (context) => const HighlightsScreen(),
         '/bookmarks': (context) => const BookmarksScreen(),
         '/account': (context) => const AccountScreen(),

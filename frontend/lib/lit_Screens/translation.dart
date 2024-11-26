@@ -1,11 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:frontend/base_scaffold.dart';
+import 'package:frontend/lit_Screens/book/language_books.dart';
+import 'package:lottie/lottie.dart';
+import 'package:http/http.dart' as http;
 
 class TranslationSelectionPage extends StatefulWidget {
-  final Future<Map<String, List<Map<String, dynamic>>>>
-      groupedTranslationsFuture;
-
-  const TranslationSelectionPage(
-      {super.key, required this.groupedTranslationsFuture});
+  const TranslationSelectionPage({Key? key}) : super(key: key);
 
   @override
   _TranslationSelectionPageState createState() =>
@@ -13,165 +15,187 @@ class TranslationSelectionPage extends StatefulWidget {
 }
 
 class _TranslationSelectionPageState extends State<TranslationSelectionPage> {
-  late Map<String, List<Map<String, dynamic>>> _groupedTranslations;
-  late List<String> _filteredLanguages;
-  late TextEditingController _languageSearchController;
+  List<String> _languageNames = [];
+  List<String> _filteredLanguageNames = [];
+  final TextEditingController _searchController = TextEditingController();
+  bool loading = true;
+  String? errorMessage;
+  late Future<List<dynamic>> translationsFuture;
 
   @override
   void initState() {
     super.initState();
-    _languageSearchController = TextEditingController();
+    _fetchAndSetTranslations();
+
+    // Add a listener to filter the list based on the search input
+    _searchController.addListener(_filterLanguages);
+  }
+
+  Future<List<dynamic>> fetchTranslations() async {
+    try {
+      final response = await http.get(Uri.parse(
+          'https://bible.helloao.org/api/available_translations.json'));
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        if (data.containsKey('translations') && data['translations'] is List) {
+          return data['translations'];
+        } else {
+          throw Exception("Unexpected response format");
+        }
+      } else {
+        throw Exception(
+            "Failed to fetch translations (status: ${response.statusCode})");
+      }
+    } catch (error) {
+      throw Exception("An error occurred while fetching translations: $error");
+    }
+  }
+
+  void _fetchAndSetTranslations() {
+    setState(() {
+      loading = true;
+      errorMessage = null;
+    });
+
+    translationsFuture = fetchTranslations();
+
+    translationsFuture.then((translations) {
+      final languageNames = translations
+          .map((translation) => translation['languageEnglishName'] as String)
+          .toSet()
+          .toList()
+        ..sort();
+
+      setState(() {
+        _languageNames = languageNames;
+        _filteredLanguageNames = languageNames;
+        loading = false;
+      });
+    }).catchError((error) {
+      setState(() {
+        errorMessage = error.toString();
+        loading = false;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _filterLanguages() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      _filteredLanguageNames = _languageNames
+          .where((language) => language.toLowerCase().contains(query))
+          .toList();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Select Translation")),
-      body: FutureBuilder<Map<String, List<Map<String, dynamic>>>>(
-        future: widget.groupedTranslationsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No translations available'));
-          }
-
-          // Set the data after the snapshot is loaded
-          _groupedTranslations = snapshot.data!;
-          _filteredLanguages = _groupedTranslations.keys.toList();
-
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                // Search bar for languages
-                TextField(
-                  controller: _languageSearchController,
-                  decoration: const InputDecoration(
-                    labelText: 'Search Languages',
-                    border: OutlineInputBorder(),
+    return BaseScaffold(
+      title: "Select Language",
+      appBarActions: [],
+      body: loading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : errorMessage != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Lottie.asset('assets/images/error.json', height: 200),
+                      const SizedBox(height: 20),
+                      Text(
+                        "Error: $errorMessage",
+                        style: Theme.of(context).textTheme.bodyLarge,
+                        textAlign: TextAlign.center,
+                      ),
+                      ElevatedButton(
+                        onPressed: _fetchAndSetTranslations,
+                        child: const Text('Retry'),
+                      ),
+                    ],
                   ),
-                  onChanged: (query) {
-                    setState(() {
-                      _filteredLanguages = _groupedTranslations.keys
-                          .where((language) => language
-                              .toLowerCase()
-                              .contains(query.toLowerCase()))
-                          .toList();
-                    });
-                  },
-                ),
-                const SizedBox(height: 16.0),
-                Expanded(
-                  child: ListView(
-                    children: _filteredLanguages.map((language) {
-                      return GestureDetector(
-                        onTap: () {
-                          _navigateToTranslations(context, language);
-                        },
-                        child: Card(
-                          margin: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: ListTile(
-                            title: Text(language),
-                            trailing: Icon(Icons.arrow_forward),
+                )
+              : Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: "Search languages",
+                          hintStyle: Theme.of(context).textTheme.bodyLarge,
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: Theme.of(context).textTheme.bodyLarge!.color,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
                           ),
                         ),
-                      );
-                    }).toList(),
-                  ),
+                      ),
+                    ),
+                    Expanded(
+                      child: _filteredLanguageNames.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Lottie.asset('assets/images/error.json',
+                                      height: 200),
+                                  const SizedBox(height: 20),
+                                  Text(
+                                    "No languages found.",
+                                    style:
+                                        Theme.of(context).textTheme.bodyLarge,
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: _fetchAndSetTranslations,
+                                    child: const Text('Retry'),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: _filteredLanguageNames.length,
+                              itemBuilder: (context, index) {
+                                final languageName =
+                                    _filteredLanguageNames[index];
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 4, vertical: 1),
+                                  child: ListTile(
+                                    tileColor: Colors.black.withOpacity(0.2),
+                                    title: Text(
+                                      languageName,
+                                      style:
+                                          Theme.of(context).textTheme.bodyLarge,
+                                    ),
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              FilteredTranslationsPage(
+                                            translations: translationsFuture,
+                                            selectedLanguageName: languageName,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  void _navigateToTranslations(BuildContext context, String language) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return TranslationListPage(
-          language: language,
-          translations: _groupedTranslations[language]!,
-        );
-      },
-    );
-  }
-}
-
-class TranslationListPage extends StatefulWidget {
-  final String language;
-  final List<Map<String, dynamic>> translations;
-
-  const TranslationListPage(
-      {super.key, required this.language, required this.translations});
-
-  @override
-  _TranslationListPageState createState() => _TranslationListPageState();
-}
-
-class _TranslationListPageState extends State<TranslationListPage> {
-  late TextEditingController _translationSearchController;
-  late List<Map<String, dynamic>> _filteredTranslations;
-
-  @override
-  void initState() {
-    super.initState();
-    _translationSearchController = TextEditingController();
-    _filteredTranslations = widget.translations;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('${widget.language} Translations')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Search bar for translations
-            TextField(
-              controller: _translationSearchController,
-              decoration: const InputDecoration(
-                labelText: 'Search Translations',
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (query) {
-                setState(() {
-                  _filteredTranslations = widget.translations
-                      .where((translation) => translation['translations']
-                          .toLowerCase()
-                          .contains(query.toLowerCase()))
-                      .toList();
-                });
-              },
-            ),
-            const SizedBox(height: 16.0),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _filteredTranslations.length,
-                itemBuilder: (context, index) {
-                  final translation = _filteredTranslations[index];
-                  return ListTile(
-                    title: Text(translation['translations']),
-                    onTap: () {
-                      // Handle translation selection
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
