@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:frontend/base_scaffold.dart';
-import 'package:frontend/lit_Screens/tenzi/dtail.dart';
+import 'package:frontend/lit_Screens/tenzi/detail.dart';
 import 'package:frontend/lit_Screens/tenzi/model.dart';
 
 class NyimboZaTenzi extends StatefulWidget {
