@@ -8,10 +8,10 @@ class FilteredTranslationsPage extends StatefulWidget {
   final String selectedLanguageName;
 
   const FilteredTranslationsPage({
-    Key? key,
+    super.key,
     required this.translations,
     required this.selectedLanguageName,
-  }) : super(key: key);
+  });
 
   @override
   _FilteredTranslationsPageState createState() =>

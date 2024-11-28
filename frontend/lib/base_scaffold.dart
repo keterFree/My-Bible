@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/chat_Screens/create_group.dart';
 import 'package:frontend/lit_Screens/account.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/providers/token_provider.dart';
 import 'package:frontend/auth/login.dart';
@@ -78,7 +79,15 @@ class BaseScaffold extends StatelessWidget {
                   Colors.transparent, // Background remains visible
           appBar: AppBar(
             iconTheme: Theme.of(context).iconTheme,
-            title: Text(title),
+            title: Text(
+              title,
+              style: GoogleFonts.roboto(
+                  textStyle: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              )),
+              overflow: TextOverflow.ellipsis,
+            ),
             // centerTitle: true,
             actions: appBarActions ??
                 _buildDefaultActions(context), // Use custom actions if provided

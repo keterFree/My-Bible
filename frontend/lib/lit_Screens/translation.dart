@@ -7,7 +7,7 @@ import 'package:lottie/lottie.dart';
 import 'package:http/http.dart' as http;
 
 class TranslationSelectionPage extends StatefulWidget {
-  const TranslationSelectionPage({Key? key}) : super(key: key);
+  const TranslationSelectionPage({super.key});
 
   @override
   _TranslationSelectionPageState createState() =>

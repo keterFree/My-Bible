@@ -180,7 +180,7 @@ class _EventListScreenState extends State<EventListScreen> {
                     ),
                   );
                 },
-              ).toList(),
+              ),
             ],
           );
         },

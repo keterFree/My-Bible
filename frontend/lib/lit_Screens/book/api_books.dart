@@ -9,7 +9,7 @@ import 'package:lottie/lottie.dart';
 class BooksPage extends StatefulWidget {
   final String id;
 
-  const BooksPage({Key? key, required this.id}) : super(key: key);
+  const BooksPage({super.key, required this.id});
 
   @override
   _BooksPageState createState() => _BooksPageState();

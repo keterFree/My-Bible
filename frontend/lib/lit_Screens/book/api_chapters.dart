@@ -11,11 +11,11 @@ class ChapterPage extends StatefulWidget {
   final int chapter;
 
   const ChapterPage({
-    Key? key,
+    super.key,
     required this.bookId,
     required this.chapter,
     required this.bibleId,
-  }) : super(key: key);
+  });
 
   @override
   State<ChapterPage> createState() => _ChapterPageState();

@@ -153,7 +153,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
         if (response.statusCode == 201) {
           final responseData =
               json.decode(await response.stream.bytesToString());
-          print('\nimage response ${responseData}\n');
+          print('\nimage response $responseData\n');
           setState(() {
             imageIds.add(responseData['_id']);
             uploadedImages.add(fileBytes);
