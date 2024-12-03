@@ -81,8 +81,8 @@ class _HymnListPageState extends State<HymnListPage> {
               title: Text(
                 'All Categories',
                 style: TextStyle(
-                  fontWeight:  FontWeight.bold,
-                  color: Theme.of(context).primaryColor),
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor),
               ),
               onTap: () {
                 setState(() {
@@ -116,6 +116,9 @@ class _HymnListPageState extends State<HymnListPage> {
 
   @override
   Widget build(BuildContext context) {
+    bool isDarkMode =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+            Brightness.dark;
     return BaseScaffold(
       title: 'Hymns',
       appBarActions: [],
@@ -153,25 +156,47 @@ class _HymnListPageState extends State<HymnListPage> {
                       final hymn = displayedHymns[index];
                       return Padding(
                         padding: const EdgeInsets.all(2.0),
-                        child: ListTile(
-                          tileColor: const Color.fromARGB(100, 0, 0, 0),
-                          title: Text(
-                            '${hymn.number}. ${hymn.title}',
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
-                          subtitle: Text(
-                            hymn.category,
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    HymnDetailPage(hymn: hymn),
+                        child: Card(
+                          color: isDarkMode
+                              ? Colors.black.withOpacity(0.6)
+                              : Colors.white.withOpacity(0.6),
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 5, horizontal: 10),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Theme.of(context).primaryColor,
+                              child: Text(
+                                hymn.number,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      isDarkMode ? Colors.black : Colors.white,
+                                ),
                               ),
-                            );
-                          },
+                            ),
+                            title: Text(
+                              hymn.title,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      isDarkMode ? Colors.white : Colors.black),
+                            ),
+                            subtitle: Text(
+                              hymn.category,
+                              style: TextStyle(
+                                  color:
+                                      isDarkMode ? Colors.white : Colors.black),
+                            ),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      HymnDetailPage(hymn: hymn),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       );
                     },

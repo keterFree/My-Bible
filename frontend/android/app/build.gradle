@@ -1,17 +1,12 @@
-plugins { 
-    id 'com.android.application'
-    id 'kotlin-android'
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
-    id 'dev.flutter.flutter-gradle-plugin'
-}
-
-def keyProperties = new Properties()
-if (project.file('../../key.properties').exists()) {
-    keyProperties.load(new FileInputStream(project.file('../../key.properties')))
+    id "dev.flutter.flutter-gradle-plugin"
 }
 
 android {
-    namespace = 'com.example.epistle'
+    namespace = "com.example.frontend"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -25,38 +20,28 @@ android {
     }
 
     defaultConfig {
-        applicationId = 'com.example.epistle'
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId = "com.example.frontend"
+        // You can update the following values to match your application needs.
+        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
-    signingConfigs {
-    release {
-        if (keyProperties.size() > 0) { // Only set if keyProperties is loaded successfully
-            storeFile file(keyProperties['storeFile'])
-            storePassword keyProperties['storePassword']
-            keyAlias keyProperties['keyAlias']
-            keyPassword keyProperties['keyPassword']
-        }
-    }
-}
-
-
     buildTypes {
         release {
-            signingConfig signingConfigs.release // Use the release signing config
-            // Enables code shrinking, obfuscation, and optimization for release builds.
-            minifyEnabled true
+            // TODO: Add your own signing config for the release build.
+             minifyEnabled true
             // Enables resource shrinking, removing unused resources.
             shrinkResources true
-
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig = signingConfigs.debug
         }
     }
 }
 
 flutter {
-    source = '../..'
+    source = "../.."
 }
